@@ -13,7 +13,11 @@ router.post("/start",async (req, res) => {
     try {
         const sandboxId = uuid();
 
-        await Promise.all([createPods(sandboxId), createService(sandboxId)]);
+        try {
+            await Promise.all([createPods(sandboxId), createService(sandboxId)]);
+        } catch (error) {
+            return res.status(500).json({message: error.message});
+        }
 
         return res.status(200).json({
             message: "Sandbox Environment started successfully",
