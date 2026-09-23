@@ -17,7 +17,7 @@ export const createPods = async (sandboxId) => {
                 {
                     name: `sandbox-${sandboxId}-container`,
                     image: 'template-image:latest',
-                    imagePullPolicy: "Always",
+                    imagePullPolicy: "ifNotPresent",
 
                     ports: [
                         {

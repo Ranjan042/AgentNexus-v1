@@ -19,6 +19,7 @@ function getPreviewProxy(sandboxId) {
             ws: false
         })
     }
+    console.log("proxying target", `http://sandbox-${sandboxId}-service:5173`);
     return previewProxies[sandboxId];
 }
 
@@ -40,7 +41,7 @@ app.use(async (req, res, next) => {
             return next();
         }
 
-        const sandboxId = parts[1].split("-")[1];
+        const sandboxId = host?.match(/^sandbox-(.+)\.preview\.localhost$/)?.[1];
 
         if (!sandboxId) {
             console.log("sandboxId not found");

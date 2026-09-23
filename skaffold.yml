@@ -1,0 +1,46 @@
+apiVersion: skaffold/v4beta13
+kind: Config
+metadata:
+  name: agentnexus-skaffold
+
+build:
+  tagPolicy:
+    customTemplate:
+      template: latest
+  local:
+    push: false
+  artifacts:
+    - image: router-image
+      context: sandbox/router
+      docker:
+        dockerfile: dockerfile
+      sync:
+        manual:
+          - dest: /router
+            src: "**/*.js"
+          - dest: /router
+            src: "**/*.json"
+
+    - image: sandbox-image
+      context: sandbox/server
+      docker:
+        dockerfile: dockerfile
+      sync:
+        manual:
+          - dest: /sandbox
+            src: "**/*.js"
+          - dest: /sandbox
+            src: "**/*.json"
+
+    - image: template-image
+      context: sandbox/template
+      docker:
+        dockerfile: dockerfile
+
+manifests:
+  rawYaml:
+    - k8s/sandbox-deployment.yml
+    - k8s/router-deployment.yml
+    - k8s/ingress.yml
+    - k8s/sandbox-service.yml
+    - k8s/router-service.yml
