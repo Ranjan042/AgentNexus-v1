@@ -5,6 +5,10 @@ import morgan from "morgan"
 const app = express();
 app.use(morgan("combined"))
 
+app.get("/health", (req, res) => {
+    res.send("OK");
+});
+
 const previewProxies = {}
 
 function getPreviewProxy(sandboxId) {
