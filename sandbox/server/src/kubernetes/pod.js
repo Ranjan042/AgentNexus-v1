@@ -17,9 +17,34 @@ export const createPods = async (sandboxId) => {
         },
 
         spec: {
+            volumes: [
+                {
+                    name: "workspace-volume",
+                    emptyDir: {}
+                }
+            ],
+            initContainers: [
+                {
+                    name: `sandbox-${sandboxId}-init-container`,
+                    image: "template-image:latest",
+                    imagePullPolicy: "Always",
+
+                    command: [
+                        "sh",
+                        "-c",
+                        "cp -r /workspace/. /seed/"
+                    ],
+                    volumeMounts: [
+                        {
+                            name: "workspace-volume",
+                            mountPath: "/seed"
+                        }
+                    ]
+                }
+            ],
             containers: [
                 {
-                    name: `sandbox-${sandboxId}-container`,
+                    name: `sandbox-${sandboxId}-preview-container`,
                     image: "template-image:latest",
                     imagePullPolicy: "Always",
 
@@ -27,6 +52,43 @@ export const createPods = async (sandboxId) => {
                         {
                             containerPort: 5173,
                             name: "http"
+                        }
+                    ],
+
+                    volumeMounts: [
+                        {
+                            name: "workspace-volume",
+                            mountPath: "/workspace"
+                        }
+                    ],
+
+                    resources: {
+                        limits: {
+                            memory: "500Mi",
+                            cpu: "500m"
+                        },
+                        requests: {
+                            memory: "250Mi",
+                            cpu: "250m"
+                        }
+                    }
+                },
+                {
+                    name: `sandbox-${sandboxId}-agent-container`,
+                    image: "agent-image:latest",
+                    imagePullPolicy: "Always",
+
+                    ports: [
+                        {
+                            containerPort: 3000,
+                            name: "http"
+                        }
+                    ],
+
+                    volumeMounts: [
+                        {
+                            name: "workspace-volume",
+                            mountPath: "/workspace"
                         }
                     ],
 
