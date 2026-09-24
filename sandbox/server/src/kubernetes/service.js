@@ -1,15 +1,16 @@
 import k8sApi from "./config.js";
 
 export const createService = async (sandboxId) => {
-    console.log("Creating service for sandbox:", `sandbox-${sandboxId}-service`);
+    const serviceName = `sandbox-${sandboxId}-service`;
+
+    console.log("Creating service for sandbox:", serviceName);
 
     const serviceManifest = {
         apiVersion: "v1",
         kind: "Service",
 
-
         metadata: {
-            name: `sandbox-${sandboxId}-service`,
+            name: serviceName,
             labels: {
                 app: `sandbox-${sandboxId}`
             }
@@ -19,6 +20,7 @@ export const createService = async (sandboxId) => {
             selector: {
                 app: `sandbox-${sandboxId}`
             },
+
             ports: [
                 {
                     protocol: "TCP",
@@ -26,21 +28,32 @@ export const createService = async (sandboxId) => {
                     targetPort: 5173
                 }
             ],
+
             type: "ClusterIP"
         }
     };
 
     try {
-       const response = await k8sApi.createNamespacedService({
-           namespace: "default",
-           body: serviceManifest
-       });
-        console.log("Service created:", response.metadata.name);
-        // console.log("Service created:", result.metadata.name);
+        const response = await k8sApi.createNamespacedService({
+            namespace: "default",
+            body: serviceManifest
+        });
+        console.log("========== SERVICE CREATED ==========");
+        console.log("Response:", response);
+        console.log(
+            "Service created:",
+           serviceName
+        );
+
         return response;
+
     } catch (error) {
-        console.error("Error creating service:", error);
+        console.error("========== SERVICE CREATION FAILED ==========");
+        console.error("Message:", error.message);
+        console.error("Status:", error.response?.statusCode);
+        console.error("Body:", error.response?.body);
+        console.error("==============================================");
+
         throw error;
     }
-
 };
