@@ -17,7 +17,7 @@ spec:
       containers:
       - name: router-container
         image: router-image:latest
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         ports:
           - containerPort: 3000
         resources:

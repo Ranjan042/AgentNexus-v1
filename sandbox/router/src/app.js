@@ -5,11 +5,12 @@ import morgan from "morgan"
 const app = express();
 app.use(morgan("combined"))
 
-app.get("/health", (req, res) => {
-    res.send("OK");
+app.get("/router/health", (req, res) => {
+    res.send("My health is ok :)");
 });
 
 const previewProxies = {}
+const agentProxies = {}
 
 function getPreviewProxy(sandboxId) {
     if (!previewProxies[sandboxId]) {
@@ -23,10 +24,24 @@ function getPreviewProxy(sandboxId) {
     return previewProxies[sandboxId];
 }
 
+function getAgentProxy(sandboxId) {
+    if (!agentProxies[sandboxId]) {
+        agentProxies[sandboxId] = createProxyMiddleware({
+            target: `http://sandbox-${sandboxId}-service:3000`,
+            changeOrigin: true,
+            ws: false
+        })
+    }
+    console.log("proxying target", `http://sandbox-${sandboxId}-service:3000`);
+    return agentProxies[sandboxId];
+}
+
 
 app.use(async (req, res, next) => {
-    console.log("Middleware is running", req.headers);
+    console.log("Middleware is running");
     try {
+        //http://sandbox-1.preview.localhost
+        //http://sandbox-1.agent.localhost
         const host = req.headers.host?.split(":")[0];
         console.log(host);
 
@@ -41,17 +56,24 @@ app.use(async (req, res, next) => {
             return next();
         }
 
-        const sandboxId = host?.match(/^sandbox-(.+)\.preview\.localhost$/)?.[1];
+        const sandboxId = host?.match(
+            /^sandbox-(.+)\.(?:preview|agent)\.localhost$/
+        )?.[1];
+        console.log("sandboxId", sandboxId);
+        const kind = parts[1];
 
         if (!sandboxId) {
             console.log("sandboxId not found");
             return next();
         }
 
-        console.log(sandboxId);
-        console.log("proxying target", `http://sandbox-${sandboxId}-service:5173`);
-
-        return getPreviewProxy(sandboxId)(req, res);
+        if (kind === "preview") {
+            console.log("proxying target", `http://sandbox-${sandboxId}-service:5173`);
+            return getPreviewProxy(sandboxId)(req, res, next);
+        } else if (kind === "agent") {
+            console.log("proxying target", `http://sandbox-${sandboxId}-service:3000`);
+            return getAgentProxy(sandboxId)(req, res, next);
+        }
 
     } catch (error) {
         return res.status(500).json({

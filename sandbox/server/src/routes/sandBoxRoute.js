@@ -6,7 +6,7 @@ import {v7 as uuid} from "uuid";
 const router = Router();
 
 router.get("/health", (req, res) => {
-    res.send("Sandbo health is ok");
+    res.send("Sandbo health is ok :)");
 });
 
 router.post("/start", async (req, res) => {

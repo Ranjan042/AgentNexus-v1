@@ -23,7 +23,7 @@ spec:
       containers:
         - name: sandbox-container
           image: sandbox-image:latest
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
 
           ports:
             - containerPort: 3000

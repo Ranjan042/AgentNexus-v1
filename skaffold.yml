@@ -4,9 +4,11 @@ metadata:
   name: agentnexus-skaffold
 
 build:
+
   tagPolicy:
-    customTemplate:
-      template: "{{.IMAGE_NAME}}:latest"
+   customTemplate:
+    template: "latest"
+  
   local:
     push: false
   artifacts:
@@ -36,6 +38,11 @@ build:
       context: sandbox/template
       docker:
         dockerfile: dockerfile
+    
+    - image: agent-image
+      context: sandbox/agent
+      docker:
+         dockerfile: dockerfile
 
 manifests:
   rawYaml:
