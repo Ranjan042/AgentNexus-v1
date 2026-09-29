@@ -164,10 +164,9 @@ export const SearchFiles = async (req, res) => {
             });
         }
 
-        const result = await searchFiles(
-            q,
-            path.join(WORKING_DIR, filePath) || "/workspace"
-        );
+        const searchPath=filePath ? getSafePath(filePath) : WORKING_DIR
+
+        const result = await searchFiles(q, searchPath);
 
         return res.json(result);
     } catch (error) {
