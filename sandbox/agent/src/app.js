@@ -13,63 +13,98 @@ app.use(express.json());
 
 app.use("/api", fileRouter);
 
-console.log("Upgraded to WebSocket Server");
-const server = http.createServer(app);
+const WORKING_DIR = "/workspace";
 
-const wss = new WebSocketServer({ server, path: "/api/terminal" });
+const httpServer = http.createServer(app);
+
+httpServer.on("upgrade", (request) => {
+    console.log("🔥 WebSocket upgrade received:", request.url);
+});
+
+const wss = new WebSocketServer({ server: httpServer });
 
 wss.on("connection", (ws) => {
-    console.log("Client connected");
+    console.log("🔥 WebSocket connection established");
 
-    const shell = process.platform === "win32" ? "powershell.exe" : "/bin/bash";
+    const shell =
+        process.platform === "win32"
+            ? "powershell.exe"
+            : "/bin/bash";
 
-    const terminal = pty.spawn(shell, [], {
+    const ptyProcess = pty.spawn(shell, [], {
         name: "xterm-color",
         cols: 80,
         rows: 30,
-        cwd: "/workspace",
+        cwd: WORKING_DIR,
         env: process.env,
     });
 
-    console.log("Terminal spawned");
+    console.log("🔥 PTY started");
 
-    terminal.onData((data) => {
+    // PTY → Browser
+    ptyProcess.onData((data) => {
         if (ws.readyState === ws.OPEN) {
             ws.send(data);
         }
     });
 
-    ws.on("message", (data) => {
+    // Browser → PTY
+    ws.on("message", (message) => {
         try {
-            const data = JSON.parse(MessageChannel.toString());
-
-            if (data.type === "input") {
-                terminal.write(data.data);
-            }
+            const data = JSON.parse(message.toString());
 
             if (data.type === "resize") {
-                terminal.resize(data.cols, data.rows);
+                const { cols, rows } = data;
+
+                ptyProcess.resize(
+                    Number(cols),
+                    Number(rows)
+                );
+
+                console.log(`PTY resized: ${cols}x${rows}`);
+                return;
             }
 
+            if (data.type === "input") {
+                ptyProcess.write(data.data);
+                return;
+            }
 
-        } catch (error) {
-            return res.status(400).json({ error: error.message });
+            console.warn("Unknown message type:", data.type);
+
+        } catch (err) {
+            console.error("WebSocket message parsing error:", err);
         }
     });
 
     ws.on("close", () => {
-        console.log("Client disconnected");
-        terminal.kill();
+        console.log("🔌 Terminal closed");
+
+        try {
+            ptyProcess.kill();
+        } catch (err) {
+            console.error("PTY kill error:", err);
+        }
     });
 
-    terminal.onExit(() => {
+    ws.on("error", (err) => {
+        console.error("WebSocket error:", err);
+
+        try {
+            ptyProcess.kill();
+        } catch { }
+    });
+
+    ptyProcess.onExit(({ exitCode, signal }) => {
+        console.log(
+            `PTY exited: code=${exitCode}, signal=${signal}`
+        );
+
         if (ws.readyState === ws.OPEN) {
             ws.close();
         }
     });
-
-
 });
 
 
-export default server;
+export default httpServer;
