@@ -3,60 +3,107 @@ import { StateGraph, START, END } from "@langchain/langgraph";
 import { AgentState } from "../state/agentState.js";
 
 import {
-    SupervisorNode,
-    ReviewNode,
-    CodeNode,
-    DebugNode,
-    ResearchNode,
+  SupervisorNode,
+  ReviewNode,
+  CodeNode,
+  DebugNode,
+  ResearchNode,
 } from "../node/nodes.js";
 
+/* =========================================================
+   SUPERVISOR ROUTER
+   ========================================================= */
 
 const supervisorRouter = (state) => {
-    console.log("========== ROUTER ==========");
-    console.log("state.nextAgent:", state.nextAgent);
+  console.log("========== SUPERVISOR ROUTER ==========");
+  console.log("state.nextAgent:", state.nextAgent);
 
-    if (state.nextAgent === "finish") {
-        console.log("➡️ END");
-        return END;
-    }
-
-    console.log("➡️ ROUTING TO:", state.nextAgent);
-
-    return state.nextAgent;
+  return state.nextAgent;
 };
 
+/* =========================================================
+   REVIEW ROUTER
+   ========================================================= */
 
-export const graph = new StateGraph(AgentState)
+const reviewRouter = (state) => {
+  console.log("========== REVIEW ROUTER ==========");
+  console.log("state.nextAgent:", state.nextAgent);
 
-    // Nodes
-    .addNode("supervisor", SupervisorNode)
-    .addNode("research", ResearchNode)
-    .addNode("code", CodeNode)
-    .addNode("debug", DebugNode)
-    .addNode("review", ReviewNode)
+  return state.nextAgent;
+};
 
-    // START → Supervisor
-    .addEdge(START, "supervisor")
+/* =========================================================
+   GRAPH
+   ========================================================= */
 
-    // Supervisor → Worker / END
-    .addConditionalEdges(
-        "supervisor",
-        supervisorRouter,
-        {
-            research: "research",
-            code: "code",
-            debug: "debug",
-            review: "review",
-            finish: END,
-        }
-    )
+const graph = new StateGraph(AgentState)
 
-    // Worker → Supervisor
-    .addEdge("research", "supervisor")
-    .addEdge("code", "supervisor")
-    .addEdge("debug", "supervisor")
-    .addEdge("review", "supervisor");
+  /* =========================
+     NODES
+     ========================= */
 
+  .addNode("supervisor", SupervisorNode)
+  .addNode("research", ResearchNode)
+  .addNode("code", CodeNode)
+  .addNode("debug", DebugNode)
+  .addNode("review", ReviewNode)
+
+  /* =========================
+     START → SUPERVISOR
+     ========================= */
+
+  .addEdge(START, "supervisor")
+
+  /* =========================
+     SUPERVISOR → WORKER
+     ========================= */
+
+  .addConditionalEdges(
+    "supervisor",
+    supervisorRouter,
+    {
+      research: "research",
+      code: "code",
+      debug: "debug",
+      review: "review",
+      finish: END,
+    }
+  )
+
+  /* =========================
+     REVIEW → FINISH / SUPERVISOR
+     ========================= */
+
+  .addConditionalEdges(
+    "review",
+    reviewRouter,
+    {
+      finish: END,
+      supervisor: "supervisor",
+    }
+  )
+
+  /* =========================
+     WORKERS → SUPERVISOR
+     ========================= */
+
+  .addEdge("research", "supervisor")
+  .addEdge("code", "supervisor")
+  .addEdge("debug", "supervisor");
+
+  /*
+    IMPORTANT:
+
+    DO NOT ADD:
+
+    .addEdge("review", "supervisor")
+
+    because review already has conditional edges above.
+  */
+
+/* =========================================================
+   COMPILE
+   ========================================================= */
 
 const AgentGraph = graph.compile();
 

@@ -6,27 +6,34 @@ import { researchAgent } from "../agents/researchAgent.js";
 
 export const SupervisorNode = async (state, config) => {
     try {
-        const iteration = state.iterations + 1;
+        // const iterations = Number(state.iterations ?? 0) + 1;
+        // console.log("🔥 SUPERVISOR NODE ENTERED")
+        // // console.log("🔥 STATE", state);
 
-        console.log("========== SUPERVISOR ==========");
-        console.log("Iteration:", iteration);
+        // console.log("========== SUPERVISOR ==========");
+        // console.log("Iteration:", iteration);
 
-        if (iteration >= 10) {
-            console.log("⚠️ MAX ITERATIONS REACHED");
+        // if (iteration >= 10) {
+        //     console.log("⚠️ MAX ITERATIONS REACHED");
 
-            return {
-                iterations: iteration,
-                nextAgent: "finish",
-            };
-        }
+        //     return {
+        //         iterations: iteration,
+        //         nextAgent: "finish",
+        //     };
+        // }
         const response = await supervisorAgent.invoke(
             {
                 messages: [
+                    ...state.messages,
                     {
                         role: "user",
-                        content: state.task
+                        content: `Original Task: ${state.task},
+                        Previous Agent Results: ${state.agentResults ? JSON.stringify(state.agentResults, null, 2) : "None"}
+                        Use the previous agent results to decide the NEXT action.
+                        Do not repeat an agent unnecessarily.
+                        If the task is complete, return "finish".
+                        `
                     },
-                    // ...state.messages,
                 ]
             },
             {
@@ -43,6 +50,8 @@ export const SupervisorNode = async (state, config) => {
         const decision = response.structuredResponse;
 
         console.log("Supervisor Decision:", decision);
+
+
 
         if (!decision) {
             throw new Error("No decision made by supervisor agent");
@@ -80,16 +89,16 @@ export const SupervisorNode = async (state, config) => {
 export const CodeNode = async (state, config) => {
     try {
         console.log("🔥 CODE NODE ENTERED");
-        console.log("🔥 STATE", state);
+        // console.log("🔥 STATE", state);
 
         const response = await codeAgent.invoke(
             {
                 messages: [
+                    ...state.messages,
                     {
                         role: "user",
                         content: state.agentTask,
                     },
-                    // ...state.messages,
                 ]
 
             },
@@ -115,6 +124,7 @@ export const CodeNode = async (state, config) => {
             currentAgent: "code",
             agentResult: decision,
             agentResults: decision,
+            nextAgent: "supervisor",
             messages: [
                 {
                     role: "assistant",
@@ -143,11 +153,11 @@ export const DebugNode = async (state, config) => {
         const response = await debugAgent.invoke(
             {
                 messages: [
+                    ...state.messages,
                     {
                         role: "assistant",
                         content: state.agentTask
-                    },
-                    // ...state.messages,
+                    }
                 ]
             },
             {
@@ -171,6 +181,7 @@ export const DebugNode = async (state, config) => {
             currentAgent: "debug",
             agentResult: decision,
             agentResults: decision,
+            nextAgent: "supervisor",
             messages: [
                 {
                     role: "assistant",
@@ -197,11 +208,11 @@ export const ReviewNode = async (state, config) => {
         const response = await reviewAgent.invoke(
             {
                 messages: [
+                    ...state.messages,
                     {
                         role: "user",
                         content: state.agentTask
                     },
-                    // ...state.messages,
                 ]
             },
             {
@@ -221,10 +232,29 @@ export const ReviewNode = async (state, config) => {
             throw new Error("No decision made by review agent");
         }
 
+        if(decision.success) {
+            console.log("✅ Review Successful");
+            return {
+                currentAgent: "review",
+                agentResult: decision,
+                agentResults: decision,
+                nextAgent: "finish",
+                messages: [
+                    {
+                        role: "assistant",
+                        content: decision.summary
+                    }
+                ],
+                errors: decision.errors || [],
+                completed: true
+            }
+        }
+
         return {
             currentAgent: "review",
             agentResult: decision,
             agentResults: decision,
+            nextAgent: "supervisor",
             messages: [
                 {
                     role: "assistant",
@@ -252,11 +282,11 @@ export const ResearchNode = async (state, config) => {
         const response = await researchAgent.invoke(
             {
                 messages: [
+                    ...state.messages,
                     {
                         role: "user",
                         content: state.agentTask
                     },
-                    // ...state.messages,
                 ]
             },
             {
@@ -280,6 +310,7 @@ export const ResearchNode = async (state, config) => {
             currentAgent: "research",
             agentResult: decision,
             agentResults: decision,
+            nextAgent: "supervisor",
             messages: [
                 {
                     role: "assistant",
