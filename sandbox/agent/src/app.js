@@ -4,6 +4,7 @@ import http from "http";
 import { WebSocketServer } from "ws";
 import pty from "node-pty";
 import fileRouter from "./routes/fileRoutes.js";
+import commandRouter from "./routes/commandRoutes.js";
 
 
 const app = express();
@@ -12,6 +13,7 @@ app.use(morgan("dev"));
 app.use(express.json());
 
 app.use("/api", fileRouter);
+app.use("/api/command", commandRouter);
 
 const WORKING_DIR = "/workspace";
 
