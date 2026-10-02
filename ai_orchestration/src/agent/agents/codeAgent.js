@@ -1,5 +1,5 @@
 import "dotenv/config";
-import {ListFilesTool, ReadFilesTool, DeleteFilesTool, SearchFilesTool,UpdateFilesTool,MoveFilesTool} from "../tools/fileTools.js";
+import {ListFilesTool, ReadFilesTool, DeleteFilesTool, SearchFilesTool,UpdateFilesTool,MoveFilesTool, ExecuteCommandTool} from "../tools/fileTools.js";
 import {createAgent} from "langchain"
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import {AgentResultSchema} from "../schema/agentResultSchema.js";
@@ -16,7 +16,8 @@ const codeTools=[
     DeleteFilesTool,
     SearchFilesTool,
     UpdateFilesTool,
-    MoveFilesTool
+    MoveFilesTool,
+    ExecuteCommandTool
 ]
 
 

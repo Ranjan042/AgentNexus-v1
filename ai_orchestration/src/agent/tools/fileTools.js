@@ -74,7 +74,7 @@ export const UpdateFilesTool = tool(
                 throw new Error("Sandbox id is required");
             }
 
-            const response=await axios.post(`http://sandbox-${sandboxId}.agent.localhost/api/updatefiles`,{updates});
+            const response=await axios.patch(`http://sandbox-${sandboxId}.agent.localhost/api/updatefiles`,{updates});
 
             // console.log(response.data);
 
@@ -102,7 +102,7 @@ export const MoveFilesTool = tool(
             console.log("Sandbox ID:", sandboxId);
             console.log("Files:", files);
 
-            const response=await axios.post(`http://sandbox-${sandboxId}.agent.localhost/api/movefiles`,{files});
+            const response=await axios.patch(`http://sandbox-${sandboxId}.agent.localhost/api/movefiles`,{files});
 
             return response.data;
         }catch (error) {
@@ -165,4 +165,26 @@ export const SearchFilesTool=tool(
     }
 )
 
+export const ExecuteCommandTool=tool(
+    async ({command},config) => {
+        try {
+            const sandboxId=config.configurable?.sandboxId;
+
+            if(!sandboxId){
+                throw new Error("Sandbox id is required");
+            }
+
+            const response=await axios.post(`http://sandbox-${sandboxId}.agent.localhost/api/command/execute`,{command});
+
+            return response.data;
+        }catch (error) {
+            throw new Error(`Error executing command: ${error.message}`);
+        }
+    },
+    {
+        name: "execute_command",
+        description: "Executes a command in the sandbox",
+        schema: z.object({command: z.string()}),
+    }
+)
 

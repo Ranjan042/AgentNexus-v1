@@ -56,6 +56,10 @@ export const SupervisorNode = async (state, config) => {
         if (!decision) {
             throw new Error("No decision made by supervisor agent");
         }
+        console.log("========== SUPERVISOR DECISION ==========");
+        console.log("decision:", decision);
+        console.log("decision.nextAgent:", decision.nextAgent);
+        console.log("decision.agentTask:", decision.agentTask);
 
         return {
             currentAgent: "supervisor",
@@ -155,7 +159,7 @@ export const DebugNode = async (state, config) => {
                 messages: [
                     ...state.messages,
                     {
-                        role: "assistant",
+                        role: "user",
                         content: state.agentTask
                     }
                 ]
@@ -232,7 +236,7 @@ export const ReviewNode = async (state, config) => {
             throw new Error("No decision made by review agent");
         }
 
-        if(decision.success) {
+        if (decision.success) {
             console.log("✅ Review Successful");
             return {
                 currentAgent: "review",

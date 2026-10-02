@@ -1,4 +1,4 @@
-import {ListFilesTool, ReadFilesTool, UpdateFilesTool, MoveFilesTool, SearchFilesTool} from "../tools/fileTools.js";
+import {ListFilesTool, ReadFilesTool, UpdateFilesTool, MoveFilesTool, SearchFilesTool,ExecuteCommandTool} from "../tools/fileTools.js";
 import {createAgent} from "langchain"
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import {AgentResultSchema} from "../schema/agentResultSchema.js";
@@ -12,6 +12,7 @@ const model= new ChatGoogleGenerativeAI({
 const debugTools=[
     ListFilesTool,
     ReadFilesTool,
+    ExecuteCommandTool,
     UpdateFilesTool,
     MoveFilesTool,
     SearchFilesTool

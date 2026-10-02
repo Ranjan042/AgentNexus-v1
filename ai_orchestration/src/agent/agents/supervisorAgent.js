@@ -24,6 +24,7 @@ Available agents:
 
 2. code
    - Used for writing, modifying, or implementing code.
+   - Use when user's request to perfrom a npm install or similar is required.
    - Use when code must be created or changed.
 
 3. debug
