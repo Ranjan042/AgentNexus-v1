@@ -16,7 +16,7 @@ export const ListFilesTool = tool(
 
             // const response=await axios.get(`http://sandbox-${sandboxId}-service:3000/api/listfiles`);
 
-            const response=await axios.get(`http://sandbox-${sandboxId}.agent.localhost/api/listfiles`);
+            const response=await axios.get(`http://sandbox-${sandboxId}-service:3000/api/listfiles`);
 
             // console.log(response.data);
 
@@ -44,7 +44,7 @@ export const ReadFilesTool = tool(
             console.log("Sandbox ID:", sandboxId);
             console.log("Files:", files);
 
-            const response=await axios.get(`http://sandbox-${sandboxId}.agent.localhost/api/readfiles?files=${files}`);
+            const response=await axios.get(`http://sandbox-${sandboxId}-service:3000/api/readfiles?files=${files}`);
 
             // console.log(response.data);
 
@@ -74,7 +74,7 @@ export const UpdateFilesTool = tool(
                 throw new Error("Sandbox id is required");
             }
 
-            const response=await axios.patch(`http://sandbox-${sandboxId}.agent.localhost/api/updatefiles`,{updates});
+            const response=await axios.patch(`http://sandbox-${sandboxId}-service:3000/api/updatefiles`,{updates});
 
             // console.log(response.data);
 
@@ -102,7 +102,7 @@ export const MoveFilesTool = tool(
             console.log("Sandbox ID:", sandboxId);
             console.log("Files:", files);
 
-            const response=await axios.patch(`http://sandbox-${sandboxId}.agent.localhost/api/movefiles`,{files});
+            const response=await axios.patch(`http://sandbox-${sandboxId}-service:3000/api/movefiles`,{files});
 
             return response.data;
         }catch (error) {
@@ -128,7 +128,7 @@ export const DeleteFilesTool = tool(
             console.log("Sandbox ID:", sandboxId);
             console.log("Files:", files);
 
-            const response=await axios.delete(`http://sandbox-${sandboxId}.agent.localhost/api/deletefiles?files=${files}`);
+            const response=await axios.delete(`http://sandbox-${sandboxId}-service:3000/api/deletefiles?files=${files}`);
 
             return response.data;
         }catch (error) {
@@ -151,7 +151,7 @@ export const SearchFilesTool=tool(
                 throw new Error("Sandbox id is required");
             }
 
-            const response=await axios.get(`http://sandbox-${sandboxId}.agent.localhost/api/searchfiles?q=${query}&path=${path}`);
+            const response=await axios.get(`http://sandbox-${sandboxId}-service:3000/api/searchfiles?q=${query}&path=${path}`);
 
             return response.data;
         }catch (error) {
@@ -174,7 +174,7 @@ export const ExecuteCommandTool=tool(
                 throw new Error("Sandbox id is required");
             }
 
-            const response=await axios.post(`http://sandbox-${sandboxId}.agent.localhost/api/command/execute`,{command});
+            const response=await axios.post(`http://sandbox-${sandboxId}-service:3000/api/command/execute`,{command});
 
             return response.data;
         }catch (error) {
