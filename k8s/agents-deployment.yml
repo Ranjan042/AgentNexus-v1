@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agents-deployment
+  labels:
+    name: agents
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: agents
+  template:
+    metadata:
+      labels:
+        name: agents
+    spec:
+      containers:
+        - image: agents-image:latest
+          name: agents-container
+          imagePullPolicy: IfNotPresent
+
+          envFrom:
+          - secretRef:
+              name: agentnexus-secret
+
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "200Mi"
+            limits:
+              cpu: "400m"
+              memory: "400Mi"
+
+          ports:
+            - containerPort: 3000
+              name: agents-port
+
+

@@ -8,7 +8,7 @@ const app=express();
 app.use(morgan("dev"));
 app.use(express.json());
 
-app.use("/api/agent",agentRoutes);
+app.use("/api/agents",agentRoutes);
 
 
 export default app;

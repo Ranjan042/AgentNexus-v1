@@ -18,6 +18,14 @@ spec:
                 port:
                   number: 80
 
+          - path: /api/agents
+            pathType: Prefix
+            backend:
+              service:
+                name: agents-service
+                port:
+                  number: 80
+
           - path: /
             pathType: Prefix
             backend:

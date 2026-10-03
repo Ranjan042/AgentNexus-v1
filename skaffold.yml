@@ -34,6 +34,17 @@ build:
           - dest: /sandbox
             src: "**/*.json"
 
+    - image: agents-image
+      context: ai_orchestration
+      docker:
+        dockerfile: dockerfile
+      sync:
+        manual:
+          - dest: /agents
+            src: "**/*.js"
+          - dest: /agents
+            src: "**/*.json"
+
     - image: template-image
       context: sandbox/template
       docker:
@@ -51,3 +62,5 @@ manifests:
     - k8s/ingress.yml
     - k8s/sandbox-service.yml
     - k8s/router-service.yml
+    - k8s/agents-deployment.yml
+    - k8s/agents-service.yml
