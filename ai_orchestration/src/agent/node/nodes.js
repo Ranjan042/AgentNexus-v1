@@ -7,7 +7,7 @@ import { researchAgent } from "../agents/researchAgent.js";
 export const SupervisorNode = async (state, config) => {
     try {
         // const iterations = Number(state.iterations ?? 0) + 1;
-        // console.log("🔥 SUPERVISOR NODE ENTERED")
+        console.log("🔥 SUPERVISOR NODE ENTERED")
         // // console.log("🔥 STATE", state);
 
         // console.log("========== SUPERVISOR ==========");
@@ -21,7 +21,9 @@ export const SupervisorNode = async (state, config) => {
         //         nextAgent: "finish",
         //     };
         // }
-        const response = await supervisorAgent.invoke(
+
+        
+            const response = await supervisorAgent.invoke(
             {
                 messages: [
                     ...state.messages,
@@ -42,15 +44,13 @@ export const SupervisorNode = async (state, config) => {
                     sandboxId: state.sandboxId,
                 },
             }
-
         );
 
-
+    
 
         const decision = response.structuredResponse;
 
         console.log("Supervisor Decision:", decision);
-
 
 
         if (!decision) {
@@ -75,6 +75,7 @@ export const SupervisorNode = async (state, config) => {
     } catch (error) {
         return {
             currentAgent: "supervisor",
+            nextAgent: "finish",
             errors: [
                 {
                     message: error.message,

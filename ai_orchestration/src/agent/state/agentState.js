@@ -36,7 +36,7 @@ export const AgentState = Annotation.Root({
   // Agent that supervisor wants to execute next
   nextAgent: Annotation({
     reducer: (_, value) => value,
-    default: () => "supervisor",
+    default: () => "research",
   }),
 
   // Result returned by the currently executed agent

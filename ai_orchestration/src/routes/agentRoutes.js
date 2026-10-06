@@ -34,7 +34,7 @@ router.post("/run", async (req, res) => {
 
             currentAgent: "supervisor",
 
-            nextAgent: "supervisor",
+            nextAgent: "research",
 
             agentResult: null,
 

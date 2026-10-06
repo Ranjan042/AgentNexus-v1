@@ -28,6 +28,12 @@ const supervisorRouter = (state) => {
 const reviewRouter = (state) => {
   console.log("========== REVIEW ROUTER ==========");
   console.log("state.nextAgent:", state.nextAgent);
+  if(state.nextAgent==" "){
+    console.log("No next agent");
+    return "finish";
+  } 
+
+
 
   return state.nextAgent;
 };
@@ -53,6 +59,7 @@ const graph = new StateGraph(AgentState)
      ========================= */
 
   .addEdge(START, "supervisor")
+
 
   /* =========================
      SUPERVISOR → WORKER
