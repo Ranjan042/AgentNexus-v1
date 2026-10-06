@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-deployment
+  labels:
+    name: auth
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: auth
+  template:
+    metadata:
+      labels:
+        name: auth
+    spec:
+      containers:
+        - image: auth-image:latest
+          name: auth-container
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "200Mi"
+            limits:
+              cpu: "400m"
+              memory: "400Mi"
+          envFrom:
+            - secretRef:
+                name: agentnexus-secret
+          ports:
+            - containerPort: 3000
+              name: auth-port
