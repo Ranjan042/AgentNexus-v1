@@ -45,6 +45,17 @@ build:
           - dest: /agents
             src: "**/*.json"
 
+    - image: auth-image
+      context: auth
+      docker:
+        dockerfile: dockerfile
+      sync:
+          manual:
+            - dest: /auth
+              src: "**/*.js"
+            - dest: /auth
+              src: "**/*.json"
+
     - image: template-image
       context: sandbox/template
       docker:
@@ -64,3 +75,5 @@ manifests:
     - k8s/router-service.yml
     - k8s/agents-deployment.yml
     - k8s/agents-service.yml
+    - k8s/auth-deployment.yml
+    - k8s/auth-service.yml
