@@ -1,6 +1,6 @@
 import { Router } from "express";
 import passport from "../config/passport.js";
-import UserModel from "../schema/userModel.js";
+import UserModel from "../schema/usermodel.js";
 import jwt from "jsonwebtoken";
 
 const router = Router();
