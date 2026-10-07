@@ -8,6 +8,12 @@ export const ListFilesTool = tool(
         try {
             const sandboxId=config.configurable?.sandboxId;
 
+            config?.writer?.({
+                type: "tool_start",
+                tool: "list_files",
+                description: "Lists the files in the sandbox",
+            })
+
             if(!sandboxId){
                 throw new Error("Sandbox id is required");
             }
@@ -15,13 +21,22 @@ export const ListFilesTool = tool(
             console.log(`http://sandbox-${sandboxId}-service:3000/api/listfiles`);
 
             // const response=await axios.get(`http://sandbox-${sandboxId}-service:3000/api/listfiles`);
-
+            config.writer?.({
+                type: "tool_end",
+                tool: "list_files",
+                description: "Lists the files in the sandbox",
+            })
             const response=await axios.get(`http://sandbox-${sandboxId}-service:3000/api/listfiles`);
 
             // console.log(response.data);
 
             return response.data;
         }catch (error) {
+            config.writer?.({
+                type: "error",
+                tool: "list_files",
+                description: "Error listing files: "+error.message,
+            })
             throw new Error(`Error listing files: ${error.message}`);
         }
     },
@@ -38,6 +53,12 @@ export const ReadFilesTool = tool(
         try {
             const sandboxId=config.configurable?.sandboxId;
 
+            config?.writer?.({
+                type: "tool_start",
+                tool: "read_files",
+                description: "Reading files: "+files,
+            })
+
             if(!sandboxId){
                 throw new Error("Sandbox id is required");
             }
@@ -45,11 +66,23 @@ export const ReadFilesTool = tool(
             console.log("Files:", files);
 
             const response=await axios.get(`http://sandbox-${sandboxId}-service:3000/api/readfiles?files=${files}`);
+           
+            config.writer?.({
+                type: "tool_end",
+                tool: "read_files",
+                description: "Finished reading files: "+files,
+            })
+
 
             // console.log(response.data);
 
             return response.data;
         }catch (error) {
+            config.writer?.({
+                type: "error",
+                tool: "read_files",
+                description: "Error reading files: "+error.message,
+            })
             throw new Error(`Error reading files: ${error.message}`);
         }
     },
@@ -69,17 +102,34 @@ export const UpdateFilesTool = tool(
             console.log("Sandbox ID:", sandboxId);
             console.log("Updates:", updates);
 
+            config?.writer?.({
+                type: "tool_start",
+                tool: "update_files",
+                description: "Updating files",
+            })
+
 
             if(!sandboxId){
                 throw new Error("Sandbox id is required");
             }
 
+            
             const response=await axios.patch(`http://sandbox-${sandboxId}-service:3000/api/updatefiles`,{updates});
 
+            config.writer?.({
+                type: "tool_end",
+                tool: "update_files",
+                description: "Finished updating files",
+            })
             // console.log(response.data);
 
             return response.data;
         }catch (error) {
+            config.writer?.({
+                type: "error",
+                tool: "update_files",
+                description: "Error updating files: "+error.message,
+            })
             throw new Error(`Error updating files: ${error.message}`);
         }
     },
@@ -102,10 +152,28 @@ export const MoveFilesTool = tool(
             console.log("Sandbox ID:", sandboxId);
             console.log("Files:", files);
 
+            config?.writer?.({
+                type: "tool_start",
+                tool: "move_files",
+                description: "Moving files"+files,
+            })
+
             const response=await axios.patch(`http://sandbox-${sandboxId}-service:3000/api/movefiles`,{files});
+
+            config.writer?.({
+                type: "tool_end",
+                tool: "move_files",
+                description: "Finished moving files"+files,
+            })
 
             return response.data;
         }catch (error) {
+
+            config.writer?.({
+                type: "error",
+                tool: "move_files",
+                description: "Error moving files: "+error.message,
+            })
             throw new Error(`Error moving files: ${error.message}`);
         }
     },
@@ -128,10 +196,27 @@ export const DeleteFilesTool = tool(
             console.log("Sandbox ID:", sandboxId);
             console.log("Files:", files);
 
+            config?.writer?.({
+                type: "tool_start",
+                tool: "delete_files",
+                description: "Deleting files"+files,
+            })
+
             const response=await axios.delete(`http://sandbox-${sandboxId}-service:3000/api/deletefiles?files=${files}`);
 
+            config.writer?.({
+                type: "tool_end",
+                tool: "delete_files",
+                description: "Finished deleting files"+files,
+            })
             return response.data;
         }catch (error) {
+
+            config.writer?.({
+                type: "error",
+                tool: "delete_files",
+                description: "Error deleting files: "+error.message,
+            })
             throw new Error(`Error deleting files: ${error.message}`);
         }
     },
@@ -149,12 +234,30 @@ export const SearchFilesTool=tool(
 
             if(!sandboxId){
                 throw new Error("Sandbox id is required");
-            }
+            }   
+
+            congig?.writer?.({
+                type: "tool_start",
+                tool: "search_files",
+                description: "Searching files"+query+" in "+path,
+            })
 
             const response=await axios.get(`http://sandbox-${sandboxId}-service:3000/api/searchfiles?q=${query}&path=${path}`);
 
+            config.writer?.({
+                type: "tool_end",
+                tool: "search_files",
+                description: "Finished searching files"+query+" in "+path,
+            })
+
             return response.data;
         }catch (error) {
+
+            config.writer?.({
+                type: "error",
+                tool: "search_files",
+                description: "Error searching files: "+error.message,
+            })
             throw new Error(`Error searching files: ${error.message}`);
         }
     },
@@ -174,10 +277,28 @@ export const ExecuteCommandTool=tool(
                 throw new Error("Sandbox id is required");
             }
 
+            config.writer?.({
+                type: "tool_start",
+                tool: "execute_command",
+                description: "Executing command: "+command, 
+            })
+
             const response=await axios.post(`http://sandbox-${sandboxId}-service:3000/api/command/execute`,{command});
+
+            config.writer?.({
+                type: "tool_end",
+                tool: "execute_command",
+                description: "Finished executing command: "+command,
+            })
 
             return response.data;
         }catch (error) {
+
+            config.writer?.({
+                type: "error",
+                tool: "execute_command",
+                description: "Error executing command: "+error.message,
+            })
             throw new Error(`Error executing command: ${error.message}`);
         }
     },
