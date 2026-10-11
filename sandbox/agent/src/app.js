@@ -23,7 +23,7 @@ httpServer.on("upgrade", (request) => {
     console.log("🔥 WebSocket upgrade received:", request.url);
 });
 
-const wss = new WebSocketServer({ server: httpServer, path: "/api/terminal" });
+const wss = new WebSocketServer({ server: httpServer, path: "/api/terminal",perMessageDeflate:false });
 
 wss.on("connection", (ws) => {
     console.log("🔥 WebSocket connection established");
