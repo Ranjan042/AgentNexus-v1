@@ -1,0 +1,1 @@
+/** @typedef {'file' | 'folder'} FileNodeType */

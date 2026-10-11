@@ -1,0 +1,10 @@
+export const selectFileTree = (state) => state.files.tree
+export const selectFileItems = (state) => state.files.items
+export const selectExpandedFolders = (state) => state.files.expandedFolders
+export const selectSelectedFile = (state) => state.files.selectedFile
+export const selectFilesLoading = (state) => state.files.loading
+export const selectFilesError = (state) => state.files.error
+export const selectFileSearchQuery = (state) => state.files.searchQuery
+export const selectFileSearchResults = (state) => state.files.searchResults
+export const selectFileSearchLoading = (state) => state.files.searchLoading
+export const selectFileSearchError = (state) => state.files.searchError
