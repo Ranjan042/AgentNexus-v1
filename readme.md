@@ -10,7 +10,7 @@ The project uses **LangGraph** to orchestrate AI agents and **Docker** and **Kub
 
 ## Demo
 
-Watch the project demo: **[AgentNexus Demo Video](demo\1011.mp4)**
+Watch the project demo: **[AgentNexus Demo Video](https://youtu.be/GNVxxJofgY8)**
 
 Replace the placeholder URL with your demo video's shareable link.
 
@@ -699,9 +699,10 @@ git push origin feature/your-feature
 
 ## License
 
-Choose and add a suitable license before distributing the project under an open-source license.
+Currently, this project does not have a formal open-source license.
 
-Until a license is added, the repository should not be assumed to grant permission for reuse, modification, or redistribution.
+You are welcome to explore the code for learning purposes. However, without an explicit license, the code is not automatically free to copy, modify, redistribute, or use commercially.
+
 
 ## Author
 
