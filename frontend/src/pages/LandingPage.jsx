@@ -19,6 +19,7 @@ export default function LandingPage() {
 
   const onStart = async () => {
     const result = await dispatch(startSandbox())
+    console.log("result",result)
     if (result.meta.requestStatus === 'fulfilled') {
       navigate(`/workspace/${result.payload.sandboxId}`)
     }
@@ -52,7 +53,7 @@ export default function LandingPage() {
                 <button
                   key={item.sandboxId}
                   type="button"
-                  className="ghost-btn w-full justify-start"
+                  className="ghost-btn w-full justify-start font-mono text-xs"
                   onClick={() => navigate(`/workspace/${item.sandboxId}`)}
                 >
                   {item.sandboxId}

@@ -10,14 +10,13 @@ export const gatewayClient = axios.create({
   },
 })
 
-
-
 export function createSandboxClient(sandboxId) {
   const client = axios.create({
     baseURL: `${getSandboxAgentUrl(sandboxId)}/api`,
     timeout: 60_000,
     headers: {
       'Content-Type': 'application/json',
+      'X-Sandbox-Id': sandboxId,
     },
   })
   attachInterceptors(client)
@@ -36,9 +35,10 @@ attachInterceptors(gatewayClient)
 export async function unwrap(promise) {
   try {
     const response = await promise
-    console.log('response', response) 
     return response.data
   } catch (error) {
-    throw normalizeError(error)
+    const normalized = normalizeError(error)
+    console.error('API Error:', normalized.message)
+    throw normalized
   }
 }

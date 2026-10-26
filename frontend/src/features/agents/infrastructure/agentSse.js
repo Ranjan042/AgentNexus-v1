@@ -5,7 +5,7 @@ function parseSseBlock(block) {
   let event = 'message'
   const dataLines = []
 
-  block.split('\n').forEach((line) => {
+  block.split(/\r?\n/).forEach((line) => {
     if (line.startsWith('event:')) {
       event = line.slice(6).trim()
     } else if (line.startsWith('data:')) {
@@ -18,7 +18,7 @@ function parseSseBlock(block) {
   }
 
   const raw = dataLines.join('\n')
-  let payload = raw
+  let payload
   try {
     payload = JSON.parse(raw)
   } catch {
@@ -29,7 +29,8 @@ function parseSseBlock(block) {
 }
 
 export async function runAgentSse({ task, sandboxId, onEvent, signal }) {
-  const response = await fetch(`${API_BASE_URL}/agents/run`, {
+  const cleanBase = (API_BASE_URL || '/api').replace(/\/+$/, '')
+  const response = await fetch(`${cleanBase}/agents/run`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -58,7 +59,7 @@ export async function runAgentSse({ task, sandboxId, onEvent, signal }) {
     }
 
     buffer += decoder.decode(value, { stream: true })
-    const parts = buffer.split('\n\n')
+    const parts = buffer.split(/\r?\n\r?\n/)
     buffer = parts.pop() || ''
 
     for (const part of parts) {

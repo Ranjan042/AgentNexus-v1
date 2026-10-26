@@ -23,14 +23,32 @@ function toTreePayload(files) {
 export const listWorkspaceFiles = createAsyncThunk(
   'files/list',
   async (sandboxIdArg, { getState, rejectWithValue }) => {
+    let sandboxId
     try {
-      const sandboxId = sandboxIdArg || requireSandboxId(getState)
-      const data = await fileApi.listFiles(sandboxId)
-      return toTreePayload(data.files || [])
-    } catch (error) {
-      const normalized = normalizeError(error, 'Failed to load files')
-      return rejectWithValue(normalized)
+      sandboxId = sandboxIdArg || requireSandboxId(getState)
+    } catch (err) {
+      return rejectWithValue(normalizeError(err, 'No sandbox is running'))
     }
+
+    const maxRetries = 4
+    let lastError = null
+
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        const data = await fileApi.listFiles(sandboxId)
+        if (data && Array.isArray(data.files)) {
+          return toTreePayload(data.files)
+        }
+      } catch (error) {
+        lastError = error
+        if (attempt < maxRetries - 1) {
+          await new Promise((resolve) => setTimeout(resolve, 1500))
+        }
+      }
+    }
+
+    const normalized = normalizeError(lastError, 'Failed to load files')
+    return rejectWithValue(normalized)
   },
 )
 

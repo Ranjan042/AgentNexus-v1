@@ -16,6 +16,7 @@ export function createTerminalConnection(sandboxId, handlers = {}) {
   let closedByUser = false
 
   socket.addEventListener('open', () => {
+    console.log("open")
     handlers.onOpen?.()
   })
 
@@ -24,6 +25,7 @@ export function createTerminalConnection(sandboxId, handlers = {}) {
   })
 
   socket.addEventListener('close', (event) => {
+    console.log("close")
     handlers.onClose?.({
       closedByUser,
       code: event.code,
