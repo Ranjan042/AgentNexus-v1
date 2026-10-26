@@ -3,13 +3,14 @@ import * as sandboxApi from '../infrastructure/sandboxApi'
 import { normalizeError } from '../../../shared/api/errorHandler'
 import { STORAGE_KEYS } from '../../../shared/constants/storage'
 import { getSandboxPreviewUrl } from '../../../shared/api/apiConfig'
-import { listWorkspaceFiles } from '../../fileExplorer/application/fileThunks'
 import { pushToast } from '../../ui/domain/uiSlice'
-import { connectTerminal } from '../../terminal/application/terminalActions'
 
 function loadRecents() {
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEYS.RECENTS) || '[]')
+    const raw = localStorage.getItem(STORAGE_KEYS.RECENTS)
+    if (!raw) return []
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed : []
   } catch {
     return []
   }
@@ -42,8 +43,6 @@ export const startSandbox = createAsyncThunk(
       })
 
       dispatch(pushToast({ type: 'success', message: 'Sandbox started' }))
-      dispatch(listWorkspaceFiles(sandboxId))
-      dispatch(connectTerminal(sandboxId))
 
       return {
         sandboxId,

@@ -6,6 +6,7 @@ const WORKING_DIR = "/workspace";
 
 
 export const ListFiles = async (req, res) => {
+    console.log("Listfile api is in action ")
     const listFiles = async (dir, baseDir) => {
         const entries = await fs.promises.readdir(dir, { withFileTypes: true });
         const files = [];

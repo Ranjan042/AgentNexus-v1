@@ -2,7 +2,6 @@ import { createSandboxClient, unwrap } from '../../../shared/api/httpClient'
 
 export async function listFiles(sandboxId) {
   const client = createSandboxClient(sandboxId)
-  console.log("client", client)
   return unwrap(client.get('/listfiles'))
 }
 
