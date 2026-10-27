@@ -7,8 +7,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-
-     - http:
+    - http:
         paths:
           - path: /api/sandbox
             pathType: Prefix
@@ -33,7 +32,7 @@ spec:
                 name: auth-service
                 port:
                   number: 80
-                  
+
           - path: /
             pathType: Prefix
             backend:
@@ -41,5 +40,3 @@ spec:
                 name: router-service
                 port:
                   number: 80
-
-        

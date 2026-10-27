@@ -1,0 +1,12 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name:  frontend-service
+spec:
+  selector:
+    name: frontend
+  type:  ClusterIP 
+  ports:
+  - name:  name-of-the-port
+    port:  80
+    targetPort:  5173
