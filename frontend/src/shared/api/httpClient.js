@@ -37,8 +37,6 @@ export async function unwrap(promise) {
     const response = await promise
     return response.data
   } catch (error) {
-    const normalized = normalizeError(error)
-    console.error('API Error:', normalized.message)
-    throw normalized
+    throw normalizeError(error)
   }
 }

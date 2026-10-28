@@ -7,6 +7,6 @@ spec:
     name: frontend
   type:  ClusterIP 
   ports:
-  - name:  name-of-the-port
+  - name:  frontend-port
     port:  80
     targetPort:  5173

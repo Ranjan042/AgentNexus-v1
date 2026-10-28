@@ -4,10 +4,8 @@ metadata:
   name: agentnexus-skaffold
 
 build:
-
   tagPolicy:
-   customTemplate:
-    template: "latest"
+    sha256: {}
   
   local:
     push: false
@@ -64,12 +62,19 @@ build:
     - image: agent-image
       context: sandbox/agent
       docker:
-         dockerfile: dockerfile
+        dockerfile: dockerfile
+
+    - image: frontend-image
+      context: frontend
+      docker:
+        dockerfile: dockerfile
 
 manifests:
   rawYaml:
     - k8s/sandbox-deployment.yml
     - k8s/router-deployment.yml
+    - k8s/frontend-deployment.yml
+    - k8s/frontend-service.yml
     - k8s/ingress.yml
     - k8s/sandbox-service.yml
     - k8s/router-service.yml

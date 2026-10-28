@@ -9,6 +9,7 @@ import { selectSandboxId } from '../application/sandboxSelectors'
 import { selectAgentStatus, selectAgentTask } from '../../agents/application/agentSelectors'
 // import { selectShellStatus } from '../../terminal/application/terminalSelectors'
 import { selectEditorSaving } from '../../editor/application/editorSelectors'
+import StatusBadge from '../../../shared/components/StatusBadge'
 
 export default function SandboxHeader() {
   const dispatch = useDispatch()
@@ -22,55 +23,42 @@ export default function SandboxHeader() {
   return (
     <header className="ide-header island">
       <div className="flex min-w-0 items-center gap-4">
-        <Link to="/" className="flex items-center gap-2 text-sm font-semibold tracking-tight text-white hover:opacity-90">
-          <Hexagon className="text-[var(--primary)]" size={18} />
+        <Link to="/" className="brand">
+          <Hexagon className="brand-mark" />
           AgentNexus
         </Link>
-        <span className="text-xs text-[var(--muted)]">/</span>
-        <span className="truncate text-xs font-mono text-[var(--muted)]">{sandboxId || 'No sandbox'}</span>
         <SandboxStatus />
+        {/* <StatusBadge
+          status={shellStatus === 'connected' ? 'connected' : 'disconnected'}
+          label={shellStatus === 'connected' ? 'Connected' : 'Offline'}
+        /> */}
       </div>
-
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1">
+        {saving ? <span className="px-2 text-xs text-[var(--muted)]">Saving...</span> : null}
         <button
           type="button"
           className="ghost-btn"
-          onClick={() => dispatch(listWorkspaceFiles())}
-          title="Refresh file tree"
-        >
-          <RefreshCw size={13} />
-          <span>Refresh</span>
-        </button>
-
-        <button
-          type="button"
-          className="ghost-btn"
-          onClick={() => dispatch(saveActiveFile())}
-          disabled={saving}
-          title="Save active file (Ctrl/Cmd+S)"
-        >
-          <Save size={13} />
-          <span>{saving ? 'Saving...' : 'Save'}</span>
-        </button>
-
-        <button
-          type="button"
-          className="primary-btn"
           onClick={() => dispatch(runAgent(task))}
-          disabled={!task || agentStatus === 'running'}
+          disabled={agentStatus === 'running' || agentStatus === 'connecting'}
         >
-          <Play size={13} />
-          <span>{agentStatus === 'running' ? 'Agent busy...' : 'Run Agent'}</span>
+          <Play size={14} /> Run
         </button>
-
+        <button type="button" className="ghost-btn" onClick={() => dispatch(saveActiveFile())}>
+          <Save size={14} /> Save
+        </button>
+        <button type="button" className="ghost-btn" onClick={() => dispatch(listWorkspaceFiles())}>
+          <RefreshCw size={14} /> Refresh
+        </button>
         <button
           type="button"
           className="ghost-btn"
-          onClick={() => navigate('/settings')}
-          title="Settings"
+          onClick={() => sandboxId && navigate(`/workspace/${sandboxId}/preview`)}
         >
-          <SettingsIcon size={14} />
+          Preview
         </button>
+        <Link to="/settings" className="ghost-btn" title="Settings">
+          <SettingsIcon size={14} />
+        </Link>
       </div>
     </header>
   )

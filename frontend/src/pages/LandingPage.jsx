@@ -45,7 +45,7 @@ export default function LandingPage() {
           </div>
         ) : null}
         {error ? <div className="mt-3 text-sm text-[var(--error)]">{error}</div> : null}
-        {recents.length ? (
+        {/* {recents.length ? (
           <div className="mt-8">
             <div className="mb-2 text-xs uppercase tracking-wide text-[var(--muted)]">Recent Workspaces</div>
             <div className="space-y-1">
@@ -53,7 +53,7 @@ export default function LandingPage() {
                 <button
                   key={item.sandboxId}
                   type="button"
-                  className="ghost-btn w-full justify-start font-mono text-xs"
+                  className="ghost-btn w-full justify-start"
                   onClick={() => navigate(`/workspace/${item.sandboxId}`)}
                 >
                   {item.sandboxId}
@@ -61,7 +61,7 @@ export default function LandingPage() {
               ))}
             </div>
           </div>
-        ) : null}
+        ) : null} */}
       </div>
     </div>
   )
