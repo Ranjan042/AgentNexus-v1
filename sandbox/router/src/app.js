@@ -1,6 +1,5 @@
 import express from "express";
 import { createProxyMiddleware } from "http-proxy-middleware";
-import { proxyUpgrade } from "httpxy";
 import morgan from "morgan";
 import http from "http";
 
@@ -20,7 +19,7 @@ function getPreviewProxy(sandboxId) {
         previewProxies[sandboxId] = createProxyMiddleware({
             target: `http://sandbox-${sandboxId}-service:5173`,
             changeOrigin: true,
-            ws: false,
+            ws: true,
         });
     }
 
@@ -32,7 +31,7 @@ function getAgentProxy(sandboxId) {
         agentProxies[sandboxId] = createProxyMiddleware({
             target: `http://sandbox-${sandboxId}-service:3000`,
             changeOrigin: true,
-            ws: false,
+            ws: true,
         });
     }
 
@@ -124,30 +123,25 @@ server.on("upgrade", (request, socket, head) => {
 
 
     if (kind === "agent") {
-        return proxyUpgrade(
-            `http://sandbox-${sandboxId}-service:3000`,
+        const proxy = getAgentProxy(sandboxId);
+
+
+        return proxy.upgrade(
             request,
             socket,
-            head,
-            { changeOrigin: true }
-        ).catch((err) => {
-            console.error("Agent WS upgrade error:", err.message);
-            if (!socket.destroyed) socket.destroy();
-        });
+            head
+        );
     }
 
 
     if (kind === "preview") {
-        return proxyUpgrade(
-            `http://sandbox-${sandboxId}-service:5173`,
+        const proxy = getPreviewProxy(sandboxId);
+
+        return proxy.upgrade(
             request,
             socket,
-            head,
-            { changeOrigin: true }
-        ).catch((err) => {
-            console.error("Preview WS upgrade error:", err.message);
-            if (!socket.destroyed) socket.destroy();
-        });
+            head
+        );
     }
 
 

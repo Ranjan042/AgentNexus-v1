@@ -3,11 +3,17 @@ kind: Ingress
 metadata:
   name: agentnexus-ingress
   namespace: default
-  annotations: {}
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
 spec:
   ingressClassName: nginx
   rules:
-    - http:
+    # Frontend and fixed API routes on localhost
+    - host: localhost
+      http:
         paths:
           - path: /api/sandbox
             pathType: Prefix
@@ -33,6 +39,18 @@ spec:
                 port:
                   number: 80
 
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend-service
+                port:
+                  number: 80
+
+
+    # Dynamic sandbox preview and agent hostnames (catch-all for *.localhost)
+    - http:
+        paths:
           - path: /
             pathType: Prefix
             backend:

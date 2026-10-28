@@ -6,7 +6,7 @@ import EditorWorkspace from '../features/editor/presentation/EditorWorkspace'
 import { hydrateSandbox } from '../features/sandbox/domain/sandboxSlice'
 import { getSandboxPreviewUrl } from '../shared/api/apiConfig'
 import { listWorkspaceFiles } from '../features/fileExplorer/application/fileThunks'
-import { connectTerminal, disconnectTerminal } from '../features/terminal/application/terminalActions'
+import { connectTerminal } from '../features/terminal/application/terminalActions'
 import { setPreviewUrl } from '../features/preview/domain/previewSlice'
 
 export default function WorkspacePage({ mode = 'editor' }) {
@@ -23,10 +23,6 @@ export default function WorkspacePage({ mode = 'editor' }) {
     dispatch(setPreviewUrl(previewUrl))
     dispatch(listWorkspaceFiles(sandboxId))
     dispatch(connectTerminal(sandboxId))
-
-    return () => {
-      dispatch(disconnectTerminal())
-    }
   }, [sandboxId, dispatch])
 
   return (

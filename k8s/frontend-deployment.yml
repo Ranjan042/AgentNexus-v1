@@ -15,17 +15,19 @@ spec:
         name: frontend
     spec:
       containers:
-        - image: frontend-image:latest
+        - image: frontend-image
           name: frontend-container
           imagePullPolicy: IfNotPresent
-
+          env:
+            - name: ROUTER_TARGET
+              value: "http://router-service:80"
           resources:
             requests:
-              cpu: "200m"
-              memory: "200Mi"
+              cpu: "100m"
+              memory: "512Mi"
             limits:
-              cpu: "400m"
-              memory: "400Mi"
+              cpu: "2000m"
+              memory: "2Gi"
 
           ports:
             - containerPort: 5173

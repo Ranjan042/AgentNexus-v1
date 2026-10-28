@@ -7,10 +7,6 @@ export function normalizeError(error, fallback = 'Something went wrong') {
     return { success: false, message: error, status: null }
   }
 
-  if (error.success === false && error.message && error.status !== undefined) {
-    return error
-  }
-
   const data = error.response?.data
   const message =
     data?.message ||
@@ -21,7 +17,7 @@ export function normalizeError(error, fallback = 'Something went wrong') {
   return {
     success: false,
     message: String(message),
-    status: error.response?.status ?? error.status ?? data?.status ?? null,
+    status: error.response?.status ?? data?.status ?? null,
   }
 }
 
