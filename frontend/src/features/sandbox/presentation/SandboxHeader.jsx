@@ -7,9 +7,13 @@ import { saveActiveFile } from '../../editor/application/editorThunks'
 import { runAgent } from '../../agents/application/agentThunks'
 import { selectSandboxId } from '../application/sandboxSelectors'
 import { selectAgentStatus, selectAgentTask } from '../../agents/application/agentSelectors'
-// import { selectShellStatus } from '../../terminal/application/terminalSelectors'
 import { selectEditorSaving } from '../../editor/application/editorSelectors'
-import StatusBadge from '../../../shared/components/StatusBadge'
+import {
+  selectCurrentUser,
+  selectIsAuthenticated,
+} from '../../auth/application/authSelectors'
+import UserProfileMenu from '../../auth/presentation/UserProfileMenu'
+import GoogleSignInButton from '../../auth/presentation/GoogleSignInButton'
 
 export default function SandboxHeader() {
   const dispatch = useDispatch()
@@ -17,8 +21,10 @@ export default function SandboxHeader() {
   const sandboxId = useSelector(selectSandboxId)
   const task = useSelector(selectAgentTask)
   const agentStatus = useSelector(selectAgentStatus)
-  // const shellStatus = useSelector(selectShellStatus)
   const saving = useSelector(selectEditorSaving)
+
+  const isAuthenticated = useSelector(selectIsAuthenticated)
+  const currentUser = useSelector(selectCurrentUser)
 
   return (
     <header className="ide-header island">
@@ -28,13 +34,11 @@ export default function SandboxHeader() {
           AgentNexus
         </Link>
         <SandboxStatus />
-        {/* <StatusBadge
-          status={shellStatus === 'connected' ? 'connected' : 'disconnected'}
-          label={shellStatus === 'connected' ? 'Connected' : 'Offline'}
-        /> */}
       </div>
-      <div className="flex items-center gap-1">
+
+      <div className="flex items-center gap-1.5">
         {saving ? <span className="px-2 text-xs text-[var(--muted)]">Saving...</span> : null}
+
         <button
           type="button"
           className="ghost-btn"
@@ -56,9 +60,24 @@ export default function SandboxHeader() {
         >
           Preview
         </button>
+
         <Link to="/settings" className="ghost-btn" title="Settings">
           <SettingsIcon size={14} />
         </Link>
+
+        {/* Google Identity Integration */}
+        <div className="ml-2 pl-2 border-l border-[var(--border)] flex items-center">
+          {isAuthenticated && currentUser ? (
+            <UserProfileMenu />
+          ) : (
+            <GoogleSignInButton
+              text="Sign in"
+              theme="dark"
+              size="small"
+              shape="pill"
+            />
+          )}
+        </div>
       </div>
     </header>
   )

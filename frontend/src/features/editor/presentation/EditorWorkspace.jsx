@@ -24,9 +24,12 @@ export default function EditorWorkspace() {
     if (!lastSavedAt) {
       return undefined
     }
-    setShowSaved(true)
-    const timer = setTimeout(() => setShowSaved(false), 2200)
-    return () => clearTimeout(timer)
+    const showTimer = setTimeout(() => setShowSaved(true), 0)
+    const hideTimer = setTimeout(() => setShowSaved(false), 2200)
+    return () => {
+      clearTimeout(showTimer)
+      clearTimeout(hideTimer)
+    }
   }, [lastSavedAt])
 
   return (
@@ -38,19 +41,14 @@ export default function EditorWorkspace() {
             <Spinner label={active ? `Opening ${active}...` : 'Opening file...'} />
           </div>
         ) : null}
-        {saving ? (
-          <div className="absolute right-3 top-3 z-10 rounded-lg bg-[var(--panel)] px-2 py-1 text-xs text-[var(--muted)]">
-            Saving...
-          </div>
-        ) : null}
-        {!saving && showSaved ? (
-          <div className="absolute right-3 top-3 z-10 rounded-lg bg-[var(--panel)] px-2 py-1 text-xs text-[var(--success)]">
-            Saved
-          </div>
-        ) : null}
         {saveError ? (
-          <div className="absolute right-3 top-10 z-10 rounded-lg bg-[var(--panel)] px-2 py-1 text-xs text-[var(--error)]">
-            Failed to save file
+          <div className="absolute right-3 top-3 z-10 rounded border border-[var(--error)] bg-[var(--panel)] px-2 py-1 text-xs text-[var(--error)]">
+            Failed to save: {saveError}
+          </div>
+        ) : null}
+        {showSaved && !saving ? (
+          <div className="absolute right-3 top-3 z-10 rounded border border-[var(--success)] bg-[var(--panel)] px-2 py-1 text-xs text-[var(--success)]">
+            Saved
           </div>
         ) : null}
         {active ? <MonacoPane /> : <EditorEmpty />}

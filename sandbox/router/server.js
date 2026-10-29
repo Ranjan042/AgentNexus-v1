@@ -1,5 +1,13 @@
-import app from "./src/app.js";
+import server from './src/app.js';
+import connectDB from './src/config/database.js';
 
-app.listen(3000, () => {
-    console.log("Router Server running on port 3000");
+const PORT = process.env.PORT || 3000;
+
+// Connect to MongoDB to enable sandbox ownership verification
+connectDB().catch((err) => {
+  console.error('Failed to establish MongoDB connection for Router Service:', err.message);
+});
+
+server.listen(PORT, () => {
+  console.log(`Router service running on port ${PORT}`);
 });

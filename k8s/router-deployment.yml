@@ -27,6 +27,9 @@ spec:
           requests:
             memory: "200Mi"
             cpu: "200m"
+        envFrom:
+          - secretRef:
+              name: agentnexus-secret
         livenessProbe:
           httpGet:
             path: /router/health

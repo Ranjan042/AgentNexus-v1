@@ -18,7 +18,7 @@ function parseSseBlock(block) {
   }
 
   const raw = dataLines.join('\n')
-  let payload = raw
+  let payload
   try {
     payload = JSON.parse(raw)
   } catch {

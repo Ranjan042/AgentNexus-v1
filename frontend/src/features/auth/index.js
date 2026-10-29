@@ -1,0 +1,11 @@
+// Public exports for auth feature
+export { default as authReducer } from './domain/authSlice'
+export * from './domain/authSlice'
+export * from './domain/authTypes'
+export * from './application/authSelectors'
+export * from './application/authThunks'
+export { default as GoogleSignInButton } from './presentation/GoogleSignInButton'
+export { default as UserProfileMenu } from './presentation/UserProfileMenu'
+export { default as AuthModal } from './presentation/AuthModal'
+export { default as ProtectedRoute } from './presentation/ProtectedRoute'
+export { default as OAuthCallbackHandler } from './presentation/OAuthCallbackHandler'

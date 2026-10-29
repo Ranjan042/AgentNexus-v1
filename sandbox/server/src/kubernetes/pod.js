@@ -131,3 +131,23 @@ export const createPods = async (sandboxId) => {
         throw error;
     }
 };
+
+export const deletePods = async (sandboxId) => {
+    const podName = `sandbox-${sandboxId}-pod`;
+    console.log("Deleting pod:", podName);
+    try {
+        const response = await k8sApi.deleteNamespacedPod({
+            name: podName,
+            namespace: "default",
+        });
+        console.log("Pod deleted successfully:", podName);
+        return response;
+    } catch (error) {
+        if (error.response?.statusCode === 404) {
+            console.warn(`Pod ${podName} not found in cluster, skipping delete.`);
+            return null;
+        }
+        console.error(`Failed to delete pod ${podName}:`, error.message);
+        throw error;
+    }
+};

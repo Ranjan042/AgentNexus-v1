@@ -1,5 +1,5 @@
-
 import { getTerminalSocketUrl } from '../../../shared/api/apiConfig'
+import { AUTH_STORAGE_KEYS } from '../../auth/domain/authTypes'
 
 export function createTerminalConnection(sandboxId, handlers = {}) {
   const url = getTerminalSocketUrl(sandboxId)
@@ -7,8 +7,16 @@ export function createTerminalConnection(sandboxId, handlers = {}) {
   const protocol =
     window.location.protocol === 'https:' ? 'wss:' : 'ws:'
 
-  const socketUrl =
-    `${protocol}//${window.location.host}${url}`
+  let token = null
+  try {
+    token = localStorage.getItem(AUTH_STORAGE_KEYS.TOKEN)
+  } catch {
+    // Ignore storage errors
+  }
+
+  const joinChar = url.includes('?') ? '&' : '?'
+  const tokenQuery = token ? `${joinChar}token=${encodeURIComponent(token)}` : ''
+  const socketUrl = `${protocol}//${window.location.host}${url}${tokenQuery}`
 
   console.log('Terminal WebSocket URL:', socketUrl)
 
@@ -16,7 +24,7 @@ export function createTerminalConnection(sandboxId, handlers = {}) {
   let closedByUser = false
 
   socket.addEventListener('open', () => {
-    console.log("open")
+    console.log('Terminal socket connected')
     handlers.onOpen?.()
   })
 
@@ -25,7 +33,7 @@ export function createTerminalConnection(sandboxId, handlers = {}) {
   })
 
   socket.addEventListener('close', (event) => {
-    console.log("close")
+    console.log('Terminal socket closed')
     handlers.onClose?.({
       closedByUser,
       code: event.code,

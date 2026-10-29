@@ -36,6 +36,10 @@ spec:
               memory: "200Mi"
               cpu: "200m"
 
+          envFrom:
+            - secretRef:
+                name: agentnexus-secret
+
           livenessProbe:
             httpGet:
               path: /api/sandbox/health

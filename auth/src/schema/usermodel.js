@@ -1,35 +1,39 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
-//using google for login and registration
-
-const UserSchema=new mongoose.Schema({
-    googleId:{
-        type: String,
-        required: true,
-        unique: true,
-        sparse: true,
-        index: true
+/**
+ * User schema representing authenticated developers and users in AgentNexus.
+ */
+const UserSchema = new mongoose.Schema(
+  {
+    googleId: {
+      type: String,
+      required: true,
+      unique: true,
+      index: true,
     },
-    name:{
-        type: String,
-        required: true,
-        trim: true,
+    name: {
+      type: String,
+      required: true,
+      trim: true,
     },
     email: {
-        type: String,
-        required: true,
-        unique: true,
-        sparse: true,
-        index: true
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+      lowercase: true,
+      index: true,
     },
     avatar: {
-        type: String,
-        default:null,
-    }
-},
-{timestamps: true}
-)
+      type: String,
+      default: null,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
 
-const UserModel = mongoose.model("users", UserSchema);
+const UserModel = mongoose.models.User || mongoose.model('User', UserSchema, 'users');
 
 export default UserModel;
