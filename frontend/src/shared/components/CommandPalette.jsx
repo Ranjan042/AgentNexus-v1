@@ -13,16 +13,17 @@ import { startSandbox } from '../../features/sandbox/application/sandboxThunks'
 import { listWorkspaceFiles } from '../../features/fileExplorer/application/fileThunks'
 import { saveActiveFile, saveAllFiles } from '../../features/editor/application/editorThunks'
 import { runAgent } from '../../features/agents/application/agentThunks'
-import { selectSandboxId } from '../../features/sandbox/application/sandboxSelectors'
 import { selectAgentTask } from '../../features/agents/application/agentSelectors'
 import { refreshPreview } from '../../features/preview/application/previewThunks'
+import { selectIsAuthenticated } from '../../features/auth/application/authSelectors'
+import { openAuthModal } from '../../features/auth/domain/authSlice'
 
 export default function CommandPalette() {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const open = useSelector((state) => state.ui.commandPaletteOpen)
-  const sandboxId = useSelector(selectSandboxId)
   const task = useSelector(selectAgentTask)
+  const isAuthenticated = useSelector(selectIsAuthenticated)
   const [query, setQuery] = useState('')
   const [index, setIndex] = useState(0)
 
@@ -33,7 +34,8 @@ export default function CommandPalette() {
   )
 
   useEffect(() => {
-    setIndex(0)
+    const timer = setTimeout(() => setIndex(0), 0)
+    return () => clearTimeout(timer)
   }, [query, open])
 
   if (!open) {
@@ -52,82 +54,87 @@ export default function CommandPalette() {
       case 'file.saveAll':
         dispatch(saveAllFiles())
         break
-      case 'sandbox.start':
-        dispatch(startSandbox()).then((result) => {
-          if (result.meta.requestStatus === 'fulfilled') {
-            navigate(`/workspace/${result.payload.sandboxId}`)
-          }
-        })
-        break
-      case 'files.refresh':
+      case 'file.refresh':
         dispatch(listWorkspaceFiles())
         break
       case 'agent.run':
         dispatch(runAgent(task))
         break
-      case 'panel.terminal':
+      case 'terminal.toggle':
         dispatch(toggleBottomPanel())
         break
-      case 'panel.ai':
-        dispatch(toggleRightPanel())
-        break
-      case 'panel.explorer':
+      case 'files.toggle':
         dispatch(toggleLeftPanel())
         break
-      case 'preview.open':
-        if (sandboxId) {
-          navigate(`/workspace/${sandboxId}/preview`)
-        }
+      case 'preview.toggle':
+        dispatch(toggleRightPanel())
         break
       case 'preview.refresh':
         dispatch(refreshPreview())
-        if (sandboxId) {
-          navigate(`/workspace/${sandboxId}/preview`)
+        break
+      case 'sandbox.start':
+        if (!isAuthenticated) {
+          dispatch(openAuthModal())
+          break
         }
+        dispatch(startSandbox()).then((action) => {
+          if (action.payload?.sandboxId) {
+            navigate(`/workspace/${action.payload.sandboxId}`)
+          }
+        })
+        break
+      case 'settings.open':
+        navigate('/settings')
         break
       default:
         break
     }
   }
 
+  const onKeyDown = (event) => {
+    if (event.key === 'ArrowDown') {
+      event.preventDefault()
+      setIndex((prev) => Math.min(items.length - 1, prev + 1))
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault()
+      setIndex((prev) => Math.max(0, prev - 1))
+    } else if (event.key === 'Enter' && items[index]) {
+      event.preventDefault()
+      run(items[index])
+    } else if (event.key === 'Escape') {
+      event.preventDefault()
+      dispatch(setCommandPaletteOpen(false))
+    }
+  }
+
   return (
     <div className="overlay" onClick={() => dispatch(setCommandPaletteOpen(false))}>
-      <div className="palette" onClick={(event) => event.stopPropagation()}>
+      <div className="palette" onClick={(e) => e.stopPropagation()}>
         <input
           autoFocus
           value={query}
-          placeholder="Type a command"
-          onChange={(event) => setQuery(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === 'ArrowDown') {
-              event.preventDefault()
-              setIndex((value) => Math.min(value + 1, items.length - 1))
-            }
-            if (event.key === 'ArrowUp') {
-              event.preventDefault()
-              setIndex((value) => Math.max(value - 1, 0))
-            }
-            if (event.key === 'Enter' && items[index]) {
-              run(items[index])
-            }
-            if (event.key === 'Escape') {
-              dispatch(setCommandPaletteOpen(false))
-            }
-          }}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={onKeyDown}
+          placeholder="Type a command or search..."
         />
-        <div className="max-h-80 overflow-auto py-1">
-          {items.map((command, itemIndex) => (
+        <div className="max-h-72 overflow-auto p-1">
+          {items.map((command, idx) => (
             <button
               key={command.id}
               type="button"
-              className={`palette-item ${itemIndex === index ? 'active' : ''}`}
-              onMouseEnter={() => setIndex(itemIndex)}
+              className={`palette-item ${idx === index ? 'active' : ''}`}
+              onMouseEnter={() => setIndex(idx)}
               onClick={() => run(command)}
             >
               <span>{command.label}</span>
-              {command.hint ? <span className="text-[var(--muted)]">{command.hint}</span> : null}
+              {command.shortcut ? (
+                <span className="font-mono text-xs text-[var(--muted)]">{command.shortcut}</span>
+              ) : null}
             </button>
           ))}
+          {items.length === 0 ? (
+            <div className="p-3 text-center text-xs text-[var(--muted)]">No commands found</div>
+          ) : null}
         </div>
       </div>
     </div>

@@ -6,6 +6,7 @@ import { getSandboxPreviewUrl } from '../../../shared/api/apiConfig'
 import { listWorkspaceFiles } from '../../fileExplorer/application/fileThunks'
 import { pushToast } from '../../ui/domain/uiSlice'
 import { connectTerminal } from '../../terminal/application/terminalActions'
+import { openAuthModal } from '../../auth/domain/authSlice'
 
 function loadRecents() {
   try {
@@ -25,16 +26,50 @@ function persistRecent(entry) {
   return next
 }
 
-export const loadRecentSandboxes = createAsyncThunk('sandbox/loadRecents', async () => {
-  return loadRecents()
-})
+export const loadRecentSandboxes = createAsyncThunk(
+  'sandbox/loadRecents',
+  async (_, { getState }) => {
+    const state = getState()
+    const isAuthenticated = Boolean(state.auth?.user)
+
+    if (isAuthenticated) {
+      try {
+        const res = await sandboxApi.fetchMySandboxes()
+        if (res?.sandboxes && Array.isArray(res.sandboxes)) {
+          return res.sandboxes.map((item) => ({
+            sandboxId: item.sandboxId,
+            name: item.name || `Sandbox ${item.sandboxId.slice(0, 8)}`,
+            previewUrl: item.previewUrl,
+            status: item.status,
+            createdAt: item.createdAt,
+            startedAt: new Date(item.createdAt).getTime(),
+          }))
+        }
+      } catch (err) {
+        console.warn('Failed to fetch user sandboxes from API, falling back to local cache:', err.message)
+      }
+    }
+
+    return loadRecents()
+  }
+)
 
 export const startSandbox = createAsyncThunk(
   'sandbox/start',
-  async (_, { dispatch, rejectWithValue }) => {
+  async (_, { dispatch, getState, rejectWithValue }) => {
+    // Prevent unauthenticated sandbox creation
+    const state = getState()
+    const isAuthenticated = Boolean(state.auth?.user)
+
+    if (!isAuthenticated) {
+      dispatch(openAuthModal())
+      const message = 'Please sign in with Google to create a development sandbox.'
+      dispatch(pushToast({ type: 'warning', message }))
+      return rejectWithValue({ message })
+    }
+
     try {
       const data = await sandboxApi.startSandbox()
-      console.log("data", data)
       const sandboxId = data.sandboxId
       const previewUrl = data.previewUrl || getSandboxPreviewUrl(sandboxId)
 
@@ -44,7 +79,6 @@ export const startSandbox = createAsyncThunk(
         startedAt: Date.now(),
       })
 
-      console.log("recents",recents)
       dispatch(pushToast({ type: 'success', message: 'Sandbox started' }))
       dispatch(listWorkspaceFiles(sandboxId))
       dispatch(connectTerminal(sandboxId))
@@ -56,10 +90,28 @@ export const startSandbox = createAsyncThunk(
         recents,
       }
     } catch (error) {
-      console.log("error",error)
       const normalized = normalizeError(error, 'Failed to start sandbox')
+      if (error?.response?.status === 401) {
+        dispatch(openAuthModal())
+      }
       dispatch(pushToast({ type: 'error', message: normalized.message }))
       return rejectWithValue(normalized)
     }
   },
+)
+
+export const terminateSandbox = createAsyncThunk(
+  'sandbox/terminate',
+  async (sandboxId, { dispatch, rejectWithValue }) => {
+    try {
+      await sandboxApi.deleteSandbox(sandboxId)
+      dispatch(pushToast({ type: 'success', message: `Sandbox ${sandboxId.slice(0, 8)} terminated` }))
+      dispatch(loadRecentSandboxes())
+      return sandboxId
+    } catch (error) {
+      const normalized = normalizeError(error, 'Failed to terminate sandbox')
+      dispatch(pushToast({ type: 'error', message: normalized.message }))
+      return rejectWithValue(normalized)
+    }
+  }
 )

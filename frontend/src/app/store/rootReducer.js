@@ -1,4 +1,5 @@
 import { combineReducers } from '@reduxjs/toolkit'
+import authReducer from '../../features/auth/domain/authSlice'
 import sandboxReducer from '../../features/sandbox/domain/sandboxSlice'
 import filesReducer from '../../features/fileExplorer/domain/filesSlice'
 import editorReducer from '../../features/editor/domain/editorSlice'
@@ -8,6 +9,7 @@ import previewReducer from '../../features/preview/domain/previewSlice'
 import uiReducer from '../../features/ui/domain/uiSlice'
 
 const rootReducer = combineReducers({
+  auth: authReducer,
   sandbox: sandboxReducer,
   files: filesReducer,
   editor: editorReducer,

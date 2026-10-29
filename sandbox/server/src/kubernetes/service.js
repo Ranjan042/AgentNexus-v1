@@ -64,3 +64,23 @@ export const createService = async (sandboxId) => {
         throw error;
     }
 };
+
+export const deleteService = async (sandboxId) => {
+    const serviceName = `sandbox-${sandboxId}-service`;
+    console.log("Deleting service:", serviceName);
+    try {
+        const response = await k8sApi.deleteNamespacedService({
+            name: serviceName,
+            namespace: "default",
+        });
+        console.log("Service deleted successfully:", serviceName);
+        return response;
+    } catch (error) {
+        if (error.response?.statusCode === 404) {
+            console.warn(`Service ${serviceName} not found in cluster, skipping delete.`);
+            return null;
+        }
+        console.error(`Failed to delete service ${serviceName}:`, error.message);
+        throw error;
+    }
+};
