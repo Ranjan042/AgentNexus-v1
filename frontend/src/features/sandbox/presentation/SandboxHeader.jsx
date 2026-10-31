@@ -1,6 +1,7 @@
-import { Hexagon, Play, RefreshCw, Save, Settings as SettingsIcon } from 'lucide-react'
+import { useEffect } from 'react'
+import { ExternalLink, Hexagon, Play, RefreshCw, Save, Settings as SettingsIcon } from 'lucide-react'
 import { useDispatch, useSelector } from 'react-redux'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import SandboxStatus from './SandboxStatus'
 import { listWorkspaceFiles } from '../../fileExplorer/application/fileThunks'
 import { saveActiveFile } from '../../editor/application/editorThunks'
@@ -8,16 +9,21 @@ import { runAgent } from '../../agents/application/agentThunks'
 import { selectSandboxId } from '../application/sandboxSelectors'
 import { selectAgentStatus, selectAgentTask } from '../../agents/application/agentSelectors'
 import { selectEditorSaving } from '../../editor/application/editorSelectors'
+import { selectLivePreviewUrl } from '../../preview/application/previewSelectors'
+import { openPreviewInNewTab } from '../../preview/application/previewUtils'
+import { getSavedToken } from '../../auth/infrastructure/authApi'
+import { getSandboxPreviewUrl } from '../../../shared/api/apiConfig'
 import {
   selectCurrentUser,
   selectIsAuthenticated,
 } from '../../auth/application/authSelectors'
+import { openAuthModal } from '../../auth/domain/authSlice'
+import { pushToast } from '../../ui/domain/uiSlice'
 import UserProfileMenu from '../../auth/presentation/UserProfileMenu'
 import GoogleSignInButton from '../../auth/presentation/GoogleSignInButton'
 
 export default function SandboxHeader() {
   const dispatch = useDispatch()
-  const navigate = useNavigate()
   const sandboxId = useSelector(selectSandboxId)
   const task = useSelector(selectAgentTask)
   const agentStatus = useSelector(selectAgentStatus)
@@ -25,6 +31,54 @@ export default function SandboxHeader() {
 
   const isAuthenticated = useSelector(selectIsAuthenticated)
   const currentUser = useSelector(selectCurrentUser)
+
+  const livePreviewUrl = useSelector(selectLivePreviewUrl)
+  const token = useSelector((state) => state.auth?.token) || getSavedToken()
+
+  // Respond to secondary postMessage token requests only from verified preview subdomains
+  useEffect(() => {
+    const handleAuthMessage = (e) => {
+      if (!token || !e.origin) return
+
+      // Strict origin validation: only accept requests from sandbox preview domains
+      const isAllowedPreviewOrigin =
+        /^http:\/\/sandbox-[a-zA-Z0-9-]+\.preview\.localhost(:\d+)?$/.test(e.origin) ||
+        /^http:\/\/localhost(:\d+)?$/.test(e.origin)
+
+      if (!isAllowedPreviewOrigin) {
+        return
+      }
+
+      if (e.data && e.data.type === 'REQUEST_AGENTNEXUS_AUTH') {
+        if (e.source && typeof e.source.postMessage === 'function') {
+          // Never use wildcard '*', always target the validated sender origin
+          e.source.postMessage({ type: 'AGENTNEXUS_AUTH_TOKEN', token }, e.origin)
+        }
+      }
+    }
+    window.addEventListener('message', handleAuthMessage)
+    return () => window.removeEventListener('message', handleAuthMessage)
+  }, [token])
+
+  const handleRunAgent = () => {
+    if (!isAuthenticated) {
+      dispatch(openAuthModal())
+      dispatch(
+        pushToast({
+          type: 'warning',
+          message: 'Please sign in to your AgentNexus account to run the AI agent.',
+        })
+      )
+      return
+    }
+    dispatch(runAgent(task))
+  }
+
+  const handleOpenPreview = () => {
+    if (!sandboxId) return
+    const baseUrl = livePreviewUrl || getSandboxPreviewUrl(sandboxId)
+    openPreviewInNewTab(baseUrl, token)
+  }
 
   return (
     <header className="ide-header island">
@@ -42,7 +96,7 @@ export default function SandboxHeader() {
         <button
           type="button"
           className="ghost-btn"
-          onClick={() => dispatch(runAgent(task))}
+          onClick={handleRunAgent}
           disabled={agentStatus === 'running' || agentStatus === 'connecting'}
         >
           <Play size={14} /> Run
@@ -56,9 +110,11 @@ export default function SandboxHeader() {
         <button
           type="button"
           className="ghost-btn"
-          onClick={() => sandboxId && navigate(`/workspace/${sandboxId}/preview`)}
+          title="Open live preview in a new Chrome tab"
+          onClick={handleOpenPreview}
+          disabled={!sandboxId}
         >
-          Preview
+          <ExternalLink size={14} /> Preview
         </button>
 
         <Link to="/settings" className="ghost-btn" title="Settings">

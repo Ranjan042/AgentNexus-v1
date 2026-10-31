@@ -27,23 +27,29 @@ export const initializeAuth = createAsyncThunk(
         try {
           const res = await authApi.fetchCurrentUser(token)
           if (res?.user) {
+            const activeToken = res.token || token
             authApi.setSavedUser(res.user)
-            return { user: res.user, token }
+            authApi.setSavedToken(activeToken)
+            return { user: res.user, token: activeToken }
           }
         } catch {
-          // Token invalid/expired - clear it
-          authApi.clearSavedToken()
+          // Token invalid or verification failed; proceed to status check
         }
       }
 
       // 3. Fallback: check session cookie via /auth/status
       const statusRes = await authApi.checkAuthStatus()
       if (statusRes?.authenticated && statusRes?.user) {
+        const resolvedToken = statusRes.token || token || authApi.getSavedToken()
+        if (resolvedToken) {
+          authApi.setSavedToken(resolvedToken)
+        }
         authApi.setSavedUser(statusRes.user)
-        return { user: statusRes.user, token: null }
+        return { user: statusRes.user, token: resolvedToken }
       }
 
       // Unauthenticated
+      authApi.clearSavedToken()
       return { user: null, token: null }
     } catch (err) {
       authApi.clearSavedToken()

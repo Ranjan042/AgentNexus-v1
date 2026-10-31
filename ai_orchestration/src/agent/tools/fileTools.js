@@ -2,6 +2,10 @@ import {tool} from "@langchain/core/tools";
 import {z} from "zod";
 import axios from "axios";
 
+const sandboxClient = axios.create({
+    timeout: 20000,
+});
+
 export const ListFilesTool = tool(
     async ({},config) => {
         console.log("Using list files tool");
@@ -20,13 +24,13 @@ export const ListFilesTool = tool(
 
             console.log(`http://sandbox-${sandboxId}-service:3000/api/listfiles`);
 
-            // const response=await axios.get(`http://sandbox-${sandboxId}-service:3000/api/listfiles`);
+            // const response=await sandboxClient.get(`http://sandbox-${sandboxId}-service:3000/api/listfiles`);
             config.writer?.({
                 type: "tool_end",
                 tool: "list_files",
                 description: "Lists the files in the sandbox",
             })
-            const response=await axios.get(`http://sandbox-${sandboxId}-service:3000/api/listfiles`);
+            const response=await sandboxClient.get(`http://sandbox-${sandboxId}-service:3000/api/listfiles`);
 
             // console.log(response.data);
 
@@ -65,7 +69,7 @@ export const ReadFilesTool = tool(
             console.log("Sandbox ID:", sandboxId);
             console.log("Files:", files);
 
-            const response=await axios.get(`http://sandbox-${sandboxId}-service:3000/api/readfiles?files=${files}`);
+            const response=await sandboxClient.get(`http://sandbox-${sandboxId}-service:3000/api/readfiles?files=${files}`);
            
             config.writer?.({
                 type: "tool_end",
@@ -114,7 +118,7 @@ export const UpdateFilesTool = tool(
             }
 
             
-            const response=await axios.patch(`http://sandbox-${sandboxId}-service:3000/api/updatefiles`,{updates});
+            const response=await sandboxClient.patch(`http://sandbox-${sandboxId}-service:3000/api/updatefiles`,{updates});
 
             config.writer?.({
                 type: "tool_end",
@@ -158,7 +162,7 @@ export const MoveFilesTool = tool(
                 description: "Moving files"+files,
             })
 
-            const response=await axios.patch(`http://sandbox-${sandboxId}-service:3000/api/movefiles`,{files});
+            const response=await sandboxClient.patch(`http://sandbox-${sandboxId}-service:3000/api/movefiles`,{files});
 
             config.writer?.({
                 type: "tool_end",
@@ -202,7 +206,7 @@ export const DeleteFilesTool = tool(
                 description: "Deleting files"+files,
             })
 
-            const response=await axios.delete(`http://sandbox-${sandboxId}-service:3000/api/deletefiles?files=${files}`);
+            const response=await sandboxClient.delete(`http://sandbox-${sandboxId}-service:3000/api/deletefiles?files=${files}`);
 
             config.writer?.({
                 type: "tool_end",
@@ -242,7 +246,7 @@ export const SearchFilesTool=tool(
                 description: "Searching files"+query+" in "+path,
             })
 
-            const response=await axios.get(`http://sandbox-${sandboxId}-service:3000/api/searchfiles?q=${query}&path=${path}`);
+            const response=await sandboxClient.get(`http://sandbox-${sandboxId}-service:3000/api/searchfiles?q=${query}&path=${path}`);
 
             config.writer?.({
                 type: "tool_end",
@@ -283,7 +287,7 @@ export const ExecuteCommandTool=tool(
                 description: "Executing command: "+command, 
             })
 
-            const response=await axios.post(`http://sandbox-${sandboxId}-service:3000/api/command/execute`,{command});
+            const response=await sandboxClient.post(`http://sandbox-${sandboxId}-service:3000/api/command/execute`,{command});
 
             config.writer?.({
                 type: "tool_end",

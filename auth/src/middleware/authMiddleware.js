@@ -1,9 +1,9 @@
-import jwt from 'jsonwebtoken';
-import UserModel from '../schema/usermodel.js';
+import { verifyJwt } from '../services/tokenService.js';
+import { findUserById } from '../services/userService.js';
+import { isDatabaseConnected, ensureDatabaseConnected } from '../config/database.js';
 
 /**
  * Middleware to authenticate requests using JWT stored in cookies or Bearer Authorization header.
- * Conforms to Google JavaScript Style Guide.
  *
  * @param {import('express').Request} req
  * @param {import('express').Response} res
@@ -29,8 +29,19 @@ export async function requireAuth(req, res, next) {
       });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await UserModel.findById(decoded.id).select('-__v');
+    const decoded = verifyJwt(token);
+
+    if (!isDatabaseConnected()) {
+      const connected = await ensureDatabaseConnected();
+      if (!connected) {
+        return res.status(503).json({
+          success: false,
+          message: 'Database service is temporarily unavailable. Please retry.',
+        });
+      }
+    }
+
+    const user = await findUserById(decoded.id);
 
     if (!user) {
       return res.status(401).json({
@@ -40,6 +51,7 @@ export async function requireAuth(req, res, next) {
     }
 
     req.user = user;
+    req.token = token;
     next();
   } catch (error) {
     return res.status(401).json({
