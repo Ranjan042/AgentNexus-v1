@@ -1,5 +1,6 @@
 import { API_BASE_URL } from '../../../shared/api/apiConfig'
 import { parseResponseError } from '../../../shared/api/errorHandler'
+import { getSavedToken } from '../../auth/infrastructure/authApi'
 
 function parseSseBlock(block) {
   let event = 'message'
@@ -28,13 +29,20 @@ function parseSseBlock(block) {
   return { event, data: payload, raw }
 }
 
-export async function runAgentSse({ task, sandboxId, onEvent, signal }) {
+export async function runAgentSse({ task, sandboxId, token, onEvent, signal }) {
+  const authToken = token || getSavedToken()
+  const headers = {
+    'Content-Type': 'application/json',
+    Accept: 'text/event-stream',
+  }
+  if (authToken) {
+    headers.Authorization = `Bearer ${authToken}`
+  }
+
   const response = await fetch(`${API_BASE_URL}/agents/run`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'text/event-stream',
-    },
+    credentials: 'include',
+    headers,
     body: JSON.stringify({ task, sandboxId }),
     signal,
   })

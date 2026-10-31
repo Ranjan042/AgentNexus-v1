@@ -1,66 +1,71 @@
 import express from "express";
 import AgentGraph from "../agent/graph/graph.js";
-import { success } from "zod";
+import { requireAgentAuth } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
+router.post("/run", requireAgentAuth, async (req, res) => {
+    const { task, sandboxId } = req.body || {};
 
-router.post("/run", async (req, res) => {
+    if (!task) {
+        return res.status(400).json({
+            success: false,
+            message: "Task is required",
+        });
+    }
 
-    try {
+    if (!sandboxId) {
+        return res.status(400).json({
+            success: false,
+            message: "Sandbox ID is required",
+        });
+    }
 
-        const { task, sandboxId } = req.body;
+    // Set headers for Server-Sent Events (SSE)
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache, no-transform");
+    res.setHeader("Connection", "keep-alive");
+    res.setHeader("X-Accel-Buffering", "no"); // Disable buffering in Nginx Ingress
 
-        res.setHeader("Content-Type", "text/event-stream");
-        res.setHeader("Cache-Control", "no-cache");
-        res.setHeader("Connection", "keep-alive");
+    res.flushHeaders();
 
-        res.flushHeaders();
-
-        const sendEvent = (event, data) => {
+    const sendEvent = (event, data) => {
+        try {
             res.write(
                 `event: ${event}\n` +
                 `data: ${JSON.stringify(data)}\n\n`
             );
-        };
-
-        if (!task) {
-            return res.status(400).json({
-                success: false,
-                message: "Task is required",
-            });
+        } catch (err) {
+            console.error("Failed to write SSE event:", err.message);
         }
+    };
 
-        if (!sandboxId) {
-            return res.status(400).json({
-                success: false,
-                message: "Sandbox ID is required",
-            });
+    // Heartbeat to keep connection alive through proxies
+    const heartbeat = setInterval(() => {
+        try {
+            res.write(": heartbeat\n\n");
+        } catch {
+            clearInterval(heartbeat);
         }
+    }, 15000);
 
+    req.on("close", () => {
+        clearInterval(heartbeat);
+    });
 
+    try {
         const initialState = {
             task,
-
             agentTask: "",
-
             messages: [],
-
             currentAgent: "supervisor",
-
             nextAgent: "research",
-
             agentResult: null,
-
             agentResults: [],
-
             sandboxId,
-
             completed: false,
-
             errors: [],
         };
-
 
         const stream = await AgentGraph.stream(
             initialState,
@@ -73,65 +78,52 @@ router.post("/run", async (req, res) => {
         );
 
         for await (const [mode, chunk] of stream) {
-            if (mode == "updates") {
+            if (mode === "updates") {
                 sendEvent("agent_progress", {
-                    data: chunk
-                })
-            }
-
-            if (mode === "messages") {
+                    data: chunk,
+                });
+            } else if (mode === "messages") {
                 sendEvent("agent_message", {
-                    data: chunk
-                })
-            }
-
-            if (mode === "custom") {
+                    data: chunk,
+                });
+            } else if (mode === "custom") {
                 sendEvent("agent_custom", {
-                    data: chunk
-                })
-            }
-
-
-            if (mode === "completed") {
+                    data: chunk,
+                });
+            } else if (mode === "completed") {
                 sendEvent("agent_completed", {
-                    data: chunk
-                })
-            }
-
-            if (mode==="errors") {
+                    data: chunk,
+                });
+            } else if (mode === "errors") {
                 sendEvent("agent_error", {
-                    data: chunk
-                })
+                    data: chunk,
+                });
             }
-
-            sendEvent("done",{
-                success: true
-            })
         }
 
+        clearInterval(heartbeat);
 
-        return res.status(200).json({
+        sendEvent("done", {
             success: true,
-            result,
         });
 
+        res.end();
 
     } catch (error) {
+        clearInterval(heartbeat);
+        console.error("Agent Graph Execution Error:", error);
 
-
-        if (mode == "errors") {
-            sendEvent("agent_error", {
-                data: chunk
-            })
-        }
-        console.error("Agent Graph Error:", error);
-
-        return res.status(500).json({
-            success: false,
-            message: error.message,
+        sendEvent("agent_error", {
+            message: error.message || "An error occurred during agent execution",
         });
+
+        sendEvent("done", {
+            success: false,
+            error: error.message,
+        });
+
+        res.end();
     }
 });
-
 
 export default router;

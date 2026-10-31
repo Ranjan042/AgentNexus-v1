@@ -44,7 +44,10 @@ function attachInterceptors(client) {
   client.interceptors.response.use(
     (response) => response,
     (error) => {
-      if (error?.response?.status === 401) {
+      const isAuthEndpoint =
+        error?.config?.url?.includes('/auth/me') ||
+        error?.config?.url?.includes('/auth/logout')
+      if (error?.response?.status === 401 && isAuthEndpoint) {
         try {
           localStorage.removeItem(AUTH_STORAGE_KEYS.TOKEN)
           localStorage.removeItem(AUTH_STORAGE_KEYS.USER)

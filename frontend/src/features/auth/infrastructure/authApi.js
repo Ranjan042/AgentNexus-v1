@@ -70,3 +70,7 @@ export async function checkAuthStatus() {
 export async function logoutApi() {
   return unwrap(gatewayClient.post('/auth/logout'))
 }
+
+export async function createPreviewTicket(sandboxId) {
+  return unwrap(gatewayClient.post('/auth/preview-ticket', { sandboxId }))
+}

@@ -1,8 +1,10 @@
 import cookieParser from 'cookie-parser';
 import express from 'express';
 import morgan from 'morgan';
+import mongoose from 'mongoose';
 import passport from './config/passport.js';
 import router from './routes/authroutes.js';
+import { isDatabaseConnected } from './config/database.js';
 
 const app = express();
 
@@ -13,9 +15,15 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(passport.initialize());
 
-// Health check endpoint
+// Health check endpoint (reports service and database readiness)
 app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok', service: 'auth-service' });
+  const connected = isDatabaseConnected();
+  res.status(connected ? 200 : 503).json({
+    status: connected ? 'ok' : 'degraded',
+    service: 'auth-service',
+    database: connected ? 'connected' : 'disconnected',
+    readyState: mongoose.connection.readyState,
+  });
 });
 
 // Auth Routes (mounted at /api)

@@ -7,6 +7,7 @@ import FileSearchPanel from '../../features/fileExplorer/presentation/FileSearch
 import WorkspaceInfo from '../../features/fileExplorer/presentation/WorkspaceInfo'
 import EditorWorkspace from '../../features/editor/presentation/EditorWorkspace'
 import AgentPanel from '../../features/agents/presentation/AgentPanel'
+import AgentLogConsole from '../../features/agents/presentation/AgentLogConsole'
 import TerminalPanel from '../../features/terminal/presentation/TerminalPanel'
 import PreviewPanel from '../../features/preview/presentation/PreviewPanel'
 import ResizableSplit from './ResizableSplit'
@@ -22,7 +23,6 @@ import {
   toggleRightPanel,
 } from '../../features/ui/domain/uiSlice'
 import { selectUi } from '../../features/ui/application/uiSelectors'
-import { selectAgentMessages, selectAgentToolCalls } from '../../features/agents/application/agentSelectors'
 import { selectSandboxId, selectSandboxStatus } from '../../features/sandbox/application/sandboxSelectors'
 import { selectActiveTab } from '../../features/editor/application/editorSelectors'
 import { selectShellStatus } from '../../features/terminal/application/terminalSelectors'
@@ -51,8 +51,6 @@ export default function IdeLayout({ children, showPreview = false }) {
   const startLeft = useRef(ui.leftPanelWidth)
   const startRight = useRef(ui.rightPanelWidth)
   const startBottom = useRef(ui.bottomPanelHeight)
-  const agentMessages = useSelector(selectAgentMessages)
-  const toolCalls = useSelector(selectAgentToolCalls)
   const sandboxId = useSelector(selectSandboxId)
   const sandboxStatus = useSelector(selectSandboxStatus)
   const activeTab = useSelector(selectActiveTab)
@@ -178,23 +176,7 @@ export default function IdeLayout({ children, showPreview = false }) {
                   Workspace output will appear here after commands and agent runs.
                 </div>
               ) : null}
-              {ui.bottomTab === 'agent-logs' ? (
-                <div className="h-full overflow-auto p-3 text-xs">
-                  {agentMessages.map((message) => (
-                    <div key={message.id} className="mb-2 whitespace-pre-wrap">
-                      {message.content}
-                    </div>
-                  ))}
-                  {toolCalls.map((call) => (
-                    <div key={call.id} className="mb-2 text-[var(--muted)]">
-                      {call.tool} — {call.status}
-                    </div>
-                  ))}
-                  {!agentMessages.length && !toolCalls.length ? (
-                    <div className="text-[var(--muted)]">No agent logs yet.</div>
-                  ) : null}
-                </div>
-              ) : null}
+              {ui.bottomTab === 'agent-logs' ? <AgentLogConsole /> : null}
               {ui.bottomTab === 'problems' ? (
                 <div className="p-3 text-xs text-[var(--muted)]">No problems detected.</div>
               ) : null}

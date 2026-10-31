@@ -10,6 +10,8 @@ import { listWorkspaceFiles } from '../../fileExplorer/application/fileThunks'
 import { reloadOpenFiles } from '../../editor/application/editorThunks'
 import { refreshPreview } from '../../preview/application/previewThunks'
 import { pushToast } from '../../ui/domain/uiSlice'
+import { openAuthModal } from '../../auth/domain/authSlice'
+import { getSavedToken } from '../../auth/infrastructure/authApi'
 import {
   appendResult,
   applyMessages,
@@ -27,7 +29,26 @@ export function cancelAgentRun() {
 export const runAgent = createAsyncThunk(
   'agent/run',
   async (taskArg, { getState, dispatch, rejectWithValue }) => {
-    const { sandbox, agent } = getState()
+    const { sandbox, agent, auth } = getState()
+
+    // 1. Authentication Check: User must be signed in with Google to run agent
+    const isAuthenticated = Boolean(auth?.user)
+    const token = auth?.token || getSavedToken()
+
+    if (!isAuthenticated && !token) {
+      dispatch(openAuthModal())
+      dispatch(
+        pushToast({
+          type: 'warning',
+          message: 'Please sign in to your AgentNexus account to run the AI agent.',
+        })
+      )
+      return rejectWithValue({
+        success: false,
+        message: 'Authentication required. Please sign in to run the AI agent.',
+      })
+    }
+
     const task = (taskArg || agent.task || '').trim()
     const sandboxId = sandbox.sandboxId
 
@@ -63,6 +84,7 @@ export const runAgent = createAsyncThunk(
       await runAgentSse({
         task,
         sandboxId,
+        token,
         onEvent: handleEvent,
         signal: abortController.signal,
       })
