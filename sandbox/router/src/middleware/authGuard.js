@@ -3,6 +3,7 @@ import { verifySandboxOwnership } from '../services/ownershipService.js';
 import { getAgentProxy, getPreviewProxy } from '../services/proxyService.js';
 import { handleSessionHandshake } from '../handlers/sessionHandler.js';
 import { renderAuthRequiredPage } from '../views/authTemplates.js';
+import redis from '../config/redis.js';
 
 /**
  * Express middleware to authenticate and route sandbox preview and agent requests.
@@ -75,6 +76,12 @@ export async function sandboxAuthGuard(req, res, next) {
       });
     }
 
+    await redis.set(
+      `sandbox:active:${sandboxId}`,
+      "active",
+      "EX",
+      300
+    );
     console.log(`[ROUTER PROXY ACCEPTED] user:${authResult.user?.email || currentUserId} -> ${kind} sandbox:${sandboxId}`);
 
     if (kind === 'preview') {

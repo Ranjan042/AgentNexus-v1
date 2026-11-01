@@ -4,6 +4,7 @@ import { v7 as uuid } from 'uuid';
 import { createPods, deletePods } from '../kubernetes/pod.js';
 import { createService, deleteService } from '../kubernetes/service.js';
 import SandboxModel from '../schema/sandboxModel.js';
+import redis from '../config/redis.js';
 
 const router = Router();
 
@@ -151,6 +152,13 @@ router.post('/start', requireAuth, async (req, res) => {
     await createService(sandboxId);
     console.log('Service creation completed');
 
+await redis.set(
+  `sandbox:active:${sandboxId}`,
+  "active",
+  "EX",
+  300
+);
+
     // 3. Persist Sandbox Record in MongoDB
     let savedSandbox = null;
     try {
@@ -223,7 +231,7 @@ router.get('/my-sandboxes', requireAuth, async (req, res) => {
 router.get('/:sandboxId', requireAuth, requireSandboxOwner, async (req, res) => {
   // Update last accessed time
   req.sandbox.lastAccessedAt = new Date();
-  await req.sandbox.save().catch(() => {});
+  await req.sandbox.save().catch(() => { });
 
   return res.status(200).json({
     success: true,

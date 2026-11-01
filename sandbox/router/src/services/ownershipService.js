@@ -36,6 +36,8 @@ export async function verifySandboxOwnership(sandboxId, userId) {
       };
     }
 
+    
+
     return { allowed: true, sandbox };
   } catch (err) {
     console.error('Error during ownership check:', err.message);
