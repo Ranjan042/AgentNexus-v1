@@ -1,0 +1,20 @@
+{
+  "name": "sync",
+  "version": "1.0.0",
+  "description": "",
+  "main": "restore.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1161.0",
+    "@aws-sdk/lib-storage": "^3.1161.0",
+    "chokidar": "^6.0.0",
+    "mime-types": "^3.0.2"
+  },
+  "devDependencies": {}
+}

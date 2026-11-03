@@ -137,6 +137,7 @@ router.post('/start', requireAuth, async (req, res) => {
   try {
     const sandboxId = uuid();
     const userId = req.user.id || req.user._id;
+
     const userEmail = req.user.email || 'developer@agentnexus.local';
     const previewUrl = `http://sandbox-${sandboxId}.preview.localhost`;
 
@@ -144,7 +145,7 @@ router.post('/start', requireAuth, async (req, res) => {
 
     // 1. Create Pod in Kubernetes
     console.log('Creating Pod...');
-    await createPods(sandboxId);
+    await createPods(sandboxId,userId);
     console.log('Pod creation completed');
 
     // 2. Create Service in Kubernetes
@@ -152,12 +153,12 @@ router.post('/start', requireAuth, async (req, res) => {
     await createService(sandboxId);
     console.log('Service creation completed');
 
-await redis.set(
-  `sandbox:active:${sandboxId}`,
-  "active",
-  "EX",
-  300
-);
+    await redis.set(
+      `sandbox:active:${sandboxId}`,
+      "active",
+      "EX",
+      300
+    );
 
     // 3. Persist Sandbox Record in MongoDB
     let savedSandbox = null;

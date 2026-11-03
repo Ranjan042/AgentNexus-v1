@@ -69,6 +69,12 @@ build:
       docker:
         dockerfile: dockerfile
 
+    - image: agentnexus-persistence
+      context: sandbox/sync
+      docker:
+        dockerfile: dockerfile
+
+
 manifests:
   rawYaml:
     - k8s/sandbox-deployment.yml
