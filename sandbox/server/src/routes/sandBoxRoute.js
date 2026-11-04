@@ -5,6 +5,7 @@ import { createPods, deletePods } from '../kubernetes/pod.js';
 import { createService, deleteService } from '../kubernetes/service.js';
 import SandboxModel from '../schema/sandboxModel.js';
 import redis from '../config/redis.js';
+import axios from 'axios';
 
 const router = Router();
 
@@ -145,7 +146,7 @@ router.post('/start', requireAuth, async (req, res) => {
 
     // 1. Create Pod in Kubernetes
     console.log('Creating Pod...');
-    await createPods(sandboxId,userId);
+    await createPods(sandboxId, userId);
     console.log('Pod creation completed');
 
     // 2. Create Service in Kubernetes
@@ -159,6 +160,20 @@ router.post('/start', requireAuth, async (req, res) => {
       "EX",
       300
     );
+
+    try {
+      const response = await axios.post(
+        `http://notification-service/api/send-notification`,
+        {
+          recipient: userEmail,
+          message: `Your sandbox ${sandboxId} is now running! Access it at ${previewUrl}`,
+          subject: 'Sandbox Environment Started',
+          channel: 'email'
+        }
+      );
+    } catch (notificationErr) {
+      console.error("Failed to send notification for sandbox start:", notificationErr.message);
+    }
 
     // 3. Persist Sandbox Record in MongoDB
     let savedSandbox = null;
