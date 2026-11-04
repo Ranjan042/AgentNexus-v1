@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'agentnexus-default-jwt-secret';
+const JWT_SECRET = process.env.JWT_SECRET ;
 
 /**
  * Extracts authentication token from Bearer Authorization header, Cookie, or request body.
