@@ -53,6 +53,18 @@ build:
               src: "**/*.js"
             - dest: /auth
               src: "**/*.json"
+      
+    - image: notification-image
+      context: notification
+      docker:
+        dockerfile: dockerfile
+      sync:
+        manual:
+          - dest: /notification
+            src: "**/*.js"
+          - dest: /notification
+            src: "**/*.json"
+
 
     - image: template-image
       context: sandbox/template
@@ -75,6 +87,7 @@ build:
         dockerfile: dockerfile
 
 
+
 manifests:
   rawYaml:
     - k8s/sandbox-deployment.yml
@@ -88,3 +101,6 @@ manifests:
     - k8s/agents-service.yml
     - k8s/auth-deployment.yml
     - k8s/auth-service.yml
+    - k8s/notification-deployment.yml
+    - k8s/notification-service.yml
+    

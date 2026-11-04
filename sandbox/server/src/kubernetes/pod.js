@@ -220,26 +220,16 @@ export const createPods = async (sandboxId, userId) => {
     };
 
     try {
-        console.log("Sending pod manifest to Kubernetes...");
 
         const response = await k8sApi.createNamespacedPod({
             namespace: "default",
             body: podManifest
         });
 
-        console.log("POD CREATED SUCCESSFULLY");
-        console.log("Pod name:", podName);
-
         return response;
 
     } catch (error) {
-        console.error("========== POD CREATION FAILED ==========");
-        console.error("Message:", error.message);
-        console.error("Status:", error.response?.statusCode);
-        console.error("Body:", error.response?.body);
-        console.error("Full error:", error);
-        console.error("=========================================");
-
+        console.error(`Failed to create pod ${podName}:`, error.message);
         throw error;
     }
 };
@@ -256,7 +246,6 @@ export const deletePods = async (sandboxId) => {
             namespace: "default"
         });
 
-        console.log("Pod deleted successfully:", podName);
 
         return response;
 

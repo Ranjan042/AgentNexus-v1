@@ -9,7 +9,7 @@ if (isProduction && (!rawSecret || rawSecret === 'agentnexus-default-jwt-secret'
   );
 }
 
-export const JWT_SECRET = rawSecret || 'agentnexus-default-jwt-secret';
+export const JWT_SECRET = rawSecret;
 
 export const JWT_OPTIONS = {
   expiresIn: '7d',

@@ -6,7 +6,6 @@ const WORKING_DIR = "/workspace";
 
 
 export const ListFiles = async (req, res) => {
-    console.log("Listfile api is in action ")
     const listFiles = async (dir, baseDir) => {
         const entries = await fs.promises.readdir(dir, { withFileTypes: true });
         const files = [];
@@ -28,14 +27,13 @@ export const ListFiles = async (req, res) => {
     };
     try {
         const files = await listFiles(WORKING_DIR, WORKING_DIR) || [];
-        console.log(files);
         res.status(200).json({
             message: 'Files listed successfully',
             files,
         });
     } catch (error) {
         res.status(500).json({
-            message: `Error listing files: ${err.message}`,
+            message: `Error listing files: ${error.message}`,
             status: 'error',
         });
     }

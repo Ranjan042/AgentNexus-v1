@@ -7,7 +7,6 @@ console.log("Initializing Notification Worker...");
 const worker = new Worker(
     "notificationQueue",
     async (job) => {
-        console.log(`Processing job ${job.id}`);
 
         const { recipient, subject, message, channel } = job.data;
 
@@ -19,7 +18,6 @@ const worker = new Worker(
                 text: message,
             });
 
-            console.log("Email accepted:", info.messageId);
 
             return { messageId: info.messageId };
         }

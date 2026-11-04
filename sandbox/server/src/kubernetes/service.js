@@ -45,12 +45,6 @@ export const createService = async (sandboxId) => {
             namespace: "default",
             body: serviceManifest
         });
-        console.log("========== SERVICE CREATED ==========");
-        console.log("Response:", response);
-        console.log(
-            "Service created:",
-           serviceName
-        );
 
         return response;
 

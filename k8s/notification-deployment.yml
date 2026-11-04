@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-deployment
+  labels:
+    name: notification
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: notification
+  template:
+    metadata:
+      labels:
+        name: notification
+    spec:
+      containers:
+        - image: notification-image:latest
+          name: notification-container
+          imagePullPolicy: IfNotPresent
+
+          envFrom:
+          - secretRef:
+              name: agentnexus-secret
+
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "200Mi"
+            limits:
+              cpu: "400m"
+              memory: "400Mi"
+
+          ports:
+            - containerPort: 3000

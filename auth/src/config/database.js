@@ -2,23 +2,15 @@ import dns from 'dns';
 import 'dotenv/config';
 import mongoose from 'mongoose';
 
-// Configure DNS resolvers. In restricted environments (e.g., Docker/Kubernetes/Atlas SRV),
+
 // system DNS or public resolvers (8.8.8.8, 1.1.1.1) ensure SRV record resolution works reliably.
-if (process.env.DNS_SERVERS) {
-  try {
-    const servers = process.env.DNS_SERVERS.split(',').map((s) => s.trim()).filter(Boolean);
-    dns.setServers(servers);
-    console.log(`Configured custom DNS resolvers: ${servers.join(', ')}`);
-  } catch (err) {
-    console.warn('Failed to set custom DNS servers from DNS_SERVERS env:', err.message);
-  }
-} else {
-  try {
-    dns.setServers(['8.8.8.8', '1.1.1.1', '8.8.4.4']);
-  } catch (err) {
-    console.warn('DNS server override failed, using default system DNS:', err.message);
-  }
+
+try {
+  dns.setServers(['8.8.8.8', '1.1.1.1', '8.8.4.4']);
+} catch (err) {
+  console.warn('DNS server override failed, using default system DNS:', err.message);
 }
+
 
 const MONGO_OPTIONS = {
   serverSelectionTimeoutMS: 8000,

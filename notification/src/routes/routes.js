@@ -5,7 +5,6 @@ export const router = Router();
 
 router.post("/send-notification", async (req, res) => {
     try {
-        console.log("Received request to send notification:", req.body);
         const { recipient, message, subject, channel } = req.body;
 
         const job = await notificationQueue.add("sendNotification", {
@@ -29,7 +28,6 @@ router.post("/send-notification", async (req, res) => {
             jobId: job.id,
         });
     } catch (error) {
-        console.error("Error adding notification job to the queue:", error);
         return res.status(500).json({
             status: "error",
             message: "Failed to add notification job to the queue",
