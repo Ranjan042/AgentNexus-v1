@@ -16,6 +16,7 @@ const SandboxSchema = new mongoose.Schema(
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
+      unique: true,
       required: true,
       index: true,
     },
@@ -33,7 +34,7 @@ const SandboxSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: ['running', 'stopped', 'terminated'],
-      default: 'running',
+      default: 'stopped',
       index: true,
     },
     previewUrl: {
@@ -55,6 +56,11 @@ const SandboxSchema = new mongoose.Schema(
     metadata: {
       type: mongoose.Schema.Types.Mixed,
       default: {},
+    },
+    currentProjectId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Project',
+      index: true,
     },
   },
   {
