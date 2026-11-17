@@ -12,7 +12,6 @@ The project uses **LangGraph** to orchestrate AI agents and **Docker** and **Kub
 
 Watch the project demo: **[AgentNexus Demo Video](https://youtu.be/GNVxxJofgY8)**
 
-Replace the placeholder URL with your demo video's shareable link.
 
 ## Table of Contents
 
